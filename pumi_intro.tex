@@ -318,6 +318,96 @@ apf::Numbering* numbers = apf::createNumbering(
 The third argument specifies that we are numbering the mesh
 nodes and the last argument specifies that there is just one
 number per node.
+Then you can set the numbers yourself.
+
+\subsection{Iteration}
+
+Most operations will require iterating over mesh entities,
+which can be done one dimension at a time.
+Iteration uses an iterator pointer as follows:
+
+\begin{lstlisting}
+apf::MeshIterator* it = mesh->begin(1);
+apf::MeshEntity* e;
+while ((e = mesh->iterate(it))) {
+  /* use "e" somehow */
+}
+mesh->end(it);
+\end{lstlisting}
+
+\subsection{Coordinates and Vector3}
+
+You can obtain and possibly change the coordinates of mesh nodes.
+The information is handled in the form of
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Vector3.html#_details}{\texttt{apf::Vector3}}
+objects.
+You can treat \texttt{apf::Vector3} just like an array, but it is
+possible to apply mathematical operators like addition, subtraction,
+multiplication by a scalar, etc. to these objects.
+There is also a C++ stream output operator for these objects, which
+means they can be given to C++'s \texttt{std::cout}.
+
+The two functions for coordinate management are
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a27c491ae08a8248e292179dbd7dacb39}{\texttt{apf::Mesh::getPoint}}
+and
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html#a39ad215b2b6d6b75d55819fbbc138f57}{\texttt{apf::Mesh2::setPoint}}
+.
+For example:
+
+\begin{lstlisting}
+apf::Vector3 v;
+mesh->getPoint(vertex, 0, v);
+v[1] = 0.8;
+mesh->setPoint(vertex, 0, v);
+\end{lstlisting}
+
+The second argument to these functions is intended to handle
+very high order fields where there is more than one node
+per mesh entity.
+Currently, set this to zero.
+For quadratic meshes, these functions will operate on edges as well as vertices.
+
+Speaking of quadratic meshes, you can convert a linear mesh
+to a quadratic mesh using the following call:
+
+\begin{lstlisting}
+apf::changeMeshShape(mesh, apf::getLagrange(2));
+\end{lstlisting}
+
+\subsection{Adjacency}
+
+Most finite element algorithms require adjacency information.
+The most important information is downward adjacency, for
+example, getting the vertices of an element.
+
+\begin{lstlisting}
+apf::MeshEntity* element = ...;
+apf::Downward v;
+int numVertices;
+numVertices = mesh->getDownward(element, 0, v);
+apf::MeshEntity* lastVertex = v[numVertices - 1];
+\end{lstlisting}
+
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a041eedcdfef4c64dafb2936219978328}{\texttt{apf::Downward}}
+is just an array that is big enough to hold the result of any downward
+query.
+The second argument to
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#ae9af2075129ffd4553092049d85b276b}{\texttt{apf::Mesh::getDownward}}
+is the target dimension, in this case 0 meaning vertices.
+
+The inverse of downward adjacency is upward adjacency,
+for example, what elements are around a vertex.
+
+\begin{lstlisting}
+apf::MeshEntity* vertex = ...;
+apf::Adjacent e;
+mesh->getAdjacent(vertex, mesh->getDimension(), e);
+apf::MeshEntity* element = e[ e.getSize() - 1 ];
+\end{lstlisting}
+
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a12d882b4789bf98322cbe6f02c91b1f8}{\texttt{apf::Adjacent}} is a more complex array type,
+because there is no safe limit on the number of elements around
+a vertex, so it has to grow dynamically.
 
 \appendix
 
