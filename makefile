@@ -12,4 +12,4 @@ pcu1: pcu1.c
 
 .PHONY: clean
 clean:
-	rm -rf pumi_intro.pdf
+	rm -rf pumi_intro.pdf pcu1 *.aux *.log *.out
