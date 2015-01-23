@@ -118,7 +118,8 @@ with outputting text from a parallel job.
 
 Since PCU uses MPI, MPI must be initialized and finalized around
 PCU, which has its own initialization and finalization calls.
-\texttt{PCU\_Add\_Ints} preforms an all-reduce operation using
+\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#abf86ddf22cc114fd2bd3f054a067c225}{\texttt{PCU\_Add\_Ints}}
+preforms an all-reduce operation using
 an array of integers as the input and output.
 In this case, the array is just one integer, $i$, which starts
 out as the process rank plus one and is overwritten with the sum
@@ -134,14 +135,22 @@ processes (it should only be run as a two-process job):
 
 \lstinputlisting{pcu2.c}
 
-A phase begins when all processes call \texttt{PCU\_Comm\_Begin}.
-After that, each process may call \texttt{PCU\_Comm\_Pack} or
-the more convenient \texttt{PCU\_COMM\_PACK} macro to pack
-data to be sent to some destination.
-When all packing is over, a process should call \texttt{PCU\_Comm\_Send}
-and enter a loop based on \texttt{PCU\_Comm\_Receive}.
+A phase begins when all processes call
+\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#aa1821bf79d880c38cdd91515751799ac}{\texttt{PCU\_Comm\_Begin}}
+.
+After that, each process may call
+\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#afd8a6600d960129089c45fd49c1b2311}{\texttt{PCU\_Comm\_Pack}}
+or the more convenient
+\texttt{PCU\_COMM\_PACK}
+macro to pack data to be sent to some destination.
+When all packing is over, a process should call
+\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#a263061f00174fc7a004dcb198778006c}{\texttt{PCU\_Comm\_Send}}
+and enter a loop based on
+\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#ad02bc960bcfa8e2d6b09458dca38bf53}{\texttt{PCU\_Comm\_Receive}}
+.
 Inside this loop, it should unpack the stream of incoming data.
-\texttt{PCU\_Comm\_Sender} will tell where the current data is coming
+\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#ac4577ded2ec61de4b4141e3353aac440}{\texttt{PCU\_Comm\_Sender}}
+will tell where the current data is coming
 from; all data from the same source arrives together in the
 order it was sent.
 
@@ -149,9 +158,13 @@ order it was sent.
 
 MDS is the library which handles the concrete mesh structure which
 users interact with through APF.
-The header file \texttt{apfMDS.h} provides the few functions
+The header file
+\href{https://github.com/SCOREC/core/blob/master/mds/apfMDS.h}{\texttt{apfMDS.h}}
+provides the few functions
 which are not part of the main abstract APF interface.
-Probably the first used function will be \texttt{apf::loadMdsMesh}:
+Probably the first used function will be
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a7be5af15392b7c92c660b0958bb75969}{\texttt{apf::loadMdsMesh}}
+:
 
 \begin{lstlisting}
   apf::Mesh2* mesh = apf::loadMdsMesh("model.dmg", "mesh.smb");
@@ -195,8 +208,9 @@ apf::Mesh2* mesh = apf::makeEmptyMdsMesh(
     gmi_load(".null"), 3, false);
 \end{lstlisting}
 
-The second argument to \texttt{apf::makeEmptyMdsMesh} specifies the
-dimensionality of the mesh, either 2D or 3D.
+The second argument to
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a11b743b52ed63a172a9f6bf5f29e2054}{\texttt{apf::makeEmptyMdsMesh}}
+specifies the dimensionality of the mesh, either 2D or 3D.
 The final argument specifies whether periodic associations
 exist between entities, this is almost always false.
 
@@ -213,7 +227,8 @@ There are many kinds of CAD model files, so GMI requires that users
 The simple format is the ``mesh model" format whose files end in
 \texttt{.dmg} and contain just enough information to maintain
 the relationship between the mesh and CAD model.
-To register the mesh model reader, just include \texttt{gmi\_mesh.h}
+To register the mesh model reader, just include
+\href{https://github.com/SCOREC/core/blob/master/gmi/gmi_mesh.h}{\texttt{gmi\_mesh.h}}
 and call the only function in that file:
 
 \begin{lstlisting}
@@ -247,9 +262,15 @@ interact a little with the concrete implementations behind it,
 if only at the beginning of the program, i.e. to create the mesh.
 
 Users will interact with a mesh by calling methods of an
-\texttt{apf::Mesh} or \texttt{apf::Mesh2} object.
-An \texttt{apf::Mesh} object can be queried but not modified,
-while an \texttt{apf::Mesh2} object may be queried and modified.
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html}{\texttt{apf::Mesh}}
+or
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html}{\texttt{apf::Mesh2}}
+object.
+An
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html}{\texttt{apf::Mesh}}
+object can be queried but not modified, while an
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html}{\texttt{apf::Mesh2}}
+object may be queried and modified.
 
 These functions will provide references to mesh entities in the
 form of an \texttt{apf::MeshEntity*} variable.
@@ -260,7 +281,9 @@ form of an \texttt{apf::MeshEntity*} variable.
 First-time users may want a way to identify mesh entities which
 is ideal for printing to the output and also for viewing in
 Paraview (see Appendinx \ref{sec:paraview}).
-A general way to do this is using an \texttt{apf::Numbering} object.
+A general way to do this is using an
+\href{http://scorec.rpi.edu/~dibanez/core/apfNumbering_8h.html}{\texttt{apf::Numbering}}
+object.
 To number the vertices, one can do the following:
 
 \begin{lstlisting}
@@ -304,7 +327,10 @@ number per node.
 Paraview is program created by Kitware, Inc. which can visualize meshes
 and fields on meshes.
 It is the program of choice for viewing meshes created by the PUMI libraries.
-APF provides a function \texttt{apf::writeVtkFiles} in the \texttt{apf.h}
+APF provides a function
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a060af76b0bb25bffe37dc7a20e121936}{\texttt{apf::writeVtkFiles}}
+in the
+\href{https://github.com/SCOREC/core/blob/master/apf/apf.h}{\texttt{apf.h}}
 header file.
 If this code is executed for a mesh distributed over two processes:
 
