@@ -116,4 +116,114 @@ In this case, the array is just one integer, $i$, which starts
 out as the process rank plus one and is overwritten with the sum
 of all such values across the job.
 
+Now lets take a look at the ``phased" communication interface of PCU.
+The general idea is that all processes participate in a ``phase",
+during which each process sends out messages to other processes.
+PCU takes care of delivering messages such that by the end of
+the phase all processes have received the messages sent to them.
+The following program exchanges an integer message between two
+processes (it should only be run as a two-process job):
+
+\lstinputlisting{pcu2.c}
+
+A phase begins when all processes call \texttt{PCU\_Comm\_Begin}.
+After that, each process may call \texttt{PCU\_Comm\_Pack} or
+the more convenient \texttt{PCU\_COMM\_PACK} macro to pack
+data to be sent to some destination.
+When all packing is over, a process should call \texttt{PCU\_Comm\_Send}
+and enter a loop based on \texttt{PCU\_Comm\_Receive}.
+Inside this loop, it should unpack the stream of incoming data.
+\texttt{PCU\_Comm\_Sender} will tell where the current data is coming
+from; all data from the same source arrives together in the
+order it was sent.
+
+\section{APF}
+
+The APF library is the one which users should interact with the
+majority of the time.
+APF is an abstract interface which allows users to query and manipulate
+meshes and fields on meshes.
+However, since it is abstract, users will inevitably need to
+interact a little with the concrete implementations behind it,
+if only at the beginning of the program, i.e. to create the mesh.
+
+\section{MDS}
+
+MDS is the library which handles the concrete mesh structure which
+users interact with through APF.
+The header file \texttt{apfMDS.h} provides the few functions
+which are not part of the main abstract APF interface.
+Probably the first used function will be \texttt{apf::loadMdsMesh}:
+
+\begin{lstlisting}
+  apf::Mesh2* mesh = apf::loadMdsMesh("model.dmg", "mesh.smb");
+\end{lstlisting}
+
+This function will read a CAD model file and mesh files into
+the data structure referenced by the variable called \texttt{mesh}.
+See Section \ref{sec:gmi} for more information about loading
+CAD model files.
+
+As for the mesh files, there is one file per part, where a
+part is the subset of the mesh stored on one process.
+So, a two-process mesh would have files named \texttt{mesh0.smb}
+and \texttt{mesh1.smb}.
+As a special case, a single-process mesh just has one file
+called \texttt{mesh0.smb}.
+The part number at the end of the name is inserted automatically,
+so calling the function with ``\texttt{mesh.smb}" in the code
+results in \texttt{mesh0.smb} being read into process 0, and so
+on for other processes.
+
+\section{GMI}
+\label{sec:gmi}
+
+GMI is the library which bridges concrete CAD model structures
+to a mesh that users interact with mainly through APF, although
+for advanced modeling operations direct calls to GMI may be necessary.
+Usually, though, users are concerned only with loading CAD model
+files.
+There are many kinds of CAD model files, so GMI requires that users
+``register" readers for the formats they expect to read.
+The simple format is the ``mesh model" format whose files end in
+\texttt{.dmg} and contain just enough information to maintain
+the relationship between the mesh and CAD model.
+To register the mesh model reader, just include \texttt{gmi\_mesh.h}
+and call the only function in that file:
+
+\begin{lstlisting}
+  gmi_register_mesh();
+\end{lstlisting}
+
+Do this before trying to read any mesh model files.
+
+\appendix
+
+\section{Paraview}
+
+Paraview is program created by Kitware, Inc. which can visualize meshes
+and fields on meshes.
+It is the program of choice for viewing meshes created by the PUMI libraries.
+APF provides a function \texttt{apf::writeVtkFiles} in the \texttt{apf.h}
+header file.
+If this code is executed for a mesh distributed over two processes:
+
+\begin{lstlisting}
+  apf::writeVtkFiles("output", mesh);
+\end{lstlisting}
+
+It would create the files \texttt{output0.vtu}, \texttt{output1.vtu},
+and \texttt{output.pvtu}.
+Opening the \texttt{output.pvtu} file in Paraview will show users the
+mesh.
+
+By default, Paraview will just render the mesh in ``Surface" mode.
+Changing this to ``Surface with Edges" will outline each visible element,
+actually making the decomposition visible.
+Also, the mesh by default is rendered in one ``Solid Color".
+There should be other options corresponding to the fields and numberings
+that were on this mesh at the time of file writing.
+There is usually an ``apf\_part" alternative for files written by APF, which
+allows users to see the parallel partitioning of the mesh in color.
+
 \end{document}

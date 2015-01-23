@@ -12,7 +12,8 @@ int main(int argc, char** argv)
   i = PCU_Comm_Self() + 1;
   PCU_Add_Ints(&i, 1);
   if (PCU_Comm_Self()==0)
-    printf("The sum of the integers from 1 to %d is %d\n", PCU_Comm_Peers(), i);
+    printf("The sum of the integers from 1 to %d is %d\n",
+        PCU_Comm_Peers(), i);
   PCU_Comm_Free();
   MPI_Finalize();
   return 0;
