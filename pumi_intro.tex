@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{graphicx}
 
 \lstset{
   basicstyle=\ttfamily,
@@ -84,11 +85,18 @@ PCU was built on the notion that scalable parallel
 programs often use only the following features of MPI:
 
 \begin{enumerate}
-\item Basic information like \texttt{MPI\_Comm\_size} and
-\texttt{MPI\_Comm\_rank}
-\item Collectives like \texttt{MPI\_Reduce} and \texttt{MPI\_Bcast}
+\item Basic information like
+\href{http://www.mpich.org/static/docs/v3.1/www3/MPI_Comm_size.html}{\texttt{MPI\_Comm\_size}}
+and
+\href{http://www.mpich.org/static/docs/v3.1/www3/MPI_Comm_rank.html}{\texttt{MPI\_Comm\_rank}}
+\item Collectives like
+\href{http://www.mpich.org/static/docs/v3.1/www3/MPI_Reduce.html}{\texttt{MPI\_Reduce}}
+and
+\href{http://www.mpich.org/static/docs/v3.1/www3/MPI_Bcast.html}{\texttt{MPI\_Bcast}}
 \item \label{it:nonblock} More complex communications implemented with variants of
-\texttt{MPI\_Isend} and \texttt{MPI\_Irecv}
+\href{http://www.mpich.org/static/docs/v3.1/www3/MPI_Isend.html}{\texttt{MPI\_Isend}}
+and
+\href{http://www.mpich.org/static/docs/v3.1/www3/MPI_Irecv.html}{\texttt{MPI\_Irecv}}
 \end{enumerate}
 
 In particular, PCU implements an efficient algorithm to solve a complex
@@ -137,16 +145,6 @@ Inside this loop, it should unpack the stream of incoming data.
 from; all data from the same source arrives together in the
 order it was sent.
 
-\section{APF}
-
-The APF library is the one which users should interact with the
-majority of the time.
-APF is an abstract interface which allows users to query and manipulate
-meshes and fields on meshes.
-However, since it is abstract, users will inevitably need to
-interact a little with the concrete implementations behind it,
-if only at the beginning of the program, i.e. to create the mesh.
-
 \section{MDS}
 
 MDS is the library which handles the concrete mesh structure which
@@ -175,6 +173,33 @@ so calling the function with ``\texttt{mesh.smb}" in the code
 results in \texttt{mesh0.smb} being read into process 0, and so
 on for other processes.
 
+At the end of your program, you should release the computer
+memory that was used to store the mesh and CAD model.
+This is done in two parts.
+First, APF will direct the underlying implementation (MDS)
+to free its memory.
+Second, APF's interface itself can be destroyed.
+
+\begin{lstlisting}
+mesh->destroyNative();
+apf::destroyMesh(mesh);
+\end{lstlisting}
+
+In some cases, you may want to construct your own small mesh.
+The easiest way to do this is to make an empty MDS mesh
+on a null CAD geometry.
+See Section \ref{sec:gmi} for info on null geometry.
+
+\begin{lstlisting}
+apf::Mesh2* mesh = apf::makeEmptyMdsMesh(
+    gmi_load(".null"), 3, false);
+\end{lstlisting}
+
+The second argument to \texttt{apf::makeEmptyMdsMesh} specifies the
+dimensionality of the mesh, either 2D or 3D.
+The final argument specifies whether periodic associations
+exist between entities, this is almost always false.
+
 \section{GMI}
 \label{sec:gmi}
 
@@ -197,9 +222,84 @@ and call the only function in that file:
 
 Do this before trying to read any mesh model files.
 
+In some cases, users do not really care about the CAD model at
+all.
+For such cases, there is a ``null" CAD model that can be used,
+which just mimicks the minimal necessary behavior to support
+the rest of the code.
+You can get a null model as follows:
+
+\begin{lstlisting}
+#include <gmi_null.h>
+
+  gmi_register_null();
+  gmi_model* g = gmi_load(".null");
+\end{lstlisting}
+
+\section{APF}
+
+The APF library is the one which users should interact with the
+majority of the time.
+APF is an abstract interface which allows users to query and manipulate
+meshes and fields on meshes.
+However, since it is abstract, users will inevitably need to
+interact a little with the concrete implementations behind it,
+if only at the beginning of the program, i.e. to create the mesh.
+
+Users will interact with a mesh by calling methods of an
+\texttt{apf::Mesh} or \texttt{apf::Mesh2} object.
+An \texttt{apf::Mesh} object can be queried but not modified,
+while an \texttt{apf::Mesh2} object may be queried and modified.
+
+These functions will provide references to mesh entities in the
+form of an \texttt{apf::MeshEntity*} variable.
+
+\subsection{Numbering}
+\label{sec:num}
+
+First-time users may want a way to identify mesh entities which
+is ideal for printing to the output and also for viewing in
+Paraview (see Appendinx \ref{sec:paraview}).
+A general way to do this is using an \texttt{apf::Numbering} object.
+To number the vertices, one can do the following:
+
+\begin{lstlisting}
+#include <apfNumbering.h>
+
+apf::Numbering* numbers = numberOwnedDimension(
+    mesh, "my_numbers", 0);
+\end{lstlisting}
+
+The second argument is a name of your choice, unique to this numbering object.
+The last argument says to number 0-dimensional entities, i.e. vertices.
+After that, you can use the following to obtain the number of a
+vertex:
+
+\begin{lstlisting}
+apf::MeshEntity* vertex = ...;
+int vertex_id = apf::getNumber(numbers, vertex, 0, 0);
+\end{lstlisting}
+
+The last two arguments are used for number high-order fields and
+multiple degrees of freedom per node, if you don't use those
+advanced features just set them to zero.
+
+In other cases, you may want to assign numbers yourself.
+To do that, start by making an empty numbering:
+
+\begin{lstlisting}
+apf::Numbering* numbers = apf::createNumbering(
+    mesh, "my_numbers", mesh->getShape(), 1);
+\end{lstlisting}
+
+The third argument specifies that we are numbering the mesh
+nodes and the last argument specifies that there is just one
+number per node.
+
 \appendix
 
 \section{Paraview}
+\label{sec:paraview}
 
 Paraview is program created by Kitware, Inc. which can visualize meshes
 and fields on meshes.
@@ -220,10 +320,27 @@ mesh.
 By default, Paraview will just render the mesh in ``Surface" mode.
 Changing this to ``Surface with Edges" will outline each visible element,
 actually making the decomposition visible.
+
 Also, the mesh by default is rendered in one ``Solid Color".
 There should be other options corresponding to the fields and numberings
 that were on this mesh at the time of file writing.
 There is usually an ``apf\_part" alternative for files written by APF, which
 allows users to see the parallel partitioning of the mesh in color.
+
+When vertices are numbered, it may be useful to display their numbers.
+See Section \ref{sec:num} for information on creating numberings.
+Right above the mesh viewing area there is a button to select nodes,
+you may also press the ``D" key.
+
+\begin{center}
+\includegraphics[width=0.05\textwidth]{select_nodes.png}
+\end{center}
+
+Click and drag to select all the nodes you want to display.
+Then go to \texttt{View->Selection Display Inspector} in the menu and click on
+the Point Labels options.
+There you can choose what to display.
+If you used \texttt{apf::Numbering} properly, there should be an option
+with the same name that you gave to the numbering.
 
 \end{document}
