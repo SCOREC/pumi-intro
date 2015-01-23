@@ -1,0 +1,119 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+\author{Dan Ibanez}
+\title{An Introduction to the PUMI libraries}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The Parallel Unstructured Mesh Infrastructure (PUMI) is
+a set of C and C++ libraries that implement data
+structures to represent CAD models and parallel
+finite element meshes, and provide functions
+for querying and modifying parallel meshes.
+PUMI supports a range of real-world projects
+which make use of parallel tetrahedral and
+mixed meshes.
+\end{abstract}
+
+\section{Overview}
+PUMI is composed of component libraries, each of
+them serving a particular purpose.
+The four that all users are likely to deal with
+are listed below:
+
+\begin{enumerate}
+\item PCU - Communication and parallel coordination
+\item APF - User-level mesh and field interface
+\item MDS - Underlying mesh implementation of choice
+\item GMI - Interfaces with CAD models
+\end{enumerate}
+
+There are other components in PUMI, which provide
+state-of-the-art functionality for operations like
+mesh adaptation and load balance.
+
+All the source code for PUMI is contained in one
+repository and compiled as one.
+The repository can be found at:
+
+\url{https://github.com/SCOREC/core}
+
+The code is written entirely in C and C++, which
+gives it a decent compromise between high performance
+and user-friendly abstraction.
+More information about the C++ language can be found at:
+
+\url{http://www.cplusplus.com/doc/tutorial/}
+
+These libraries provide header files with structures
+and functions for users.
+Documentation for all these user-level structures and functions
+is provided here:
+
+\url{http://scorec.rpi.edu/~dibanez/core/index.html}
+
+\section{PCU}
+
+The Parallel Control Utility (PCU) library is built
+on top of a Message Passing Interface (MPI) implementation,
+and is meant to be a higher level interface that people
+can use instead of MPI itself.
+
+MPI is the standard system for building massively parallel
+programs to run on supercomputers, which all consist
+at some level of separate computers connected by a
+network which transmits messages between them.
+Although it is not necessary to know MPI in order to use
+PCU, learning MPI is a recommended starting point.
+A decent introduction to MPI can be found here:
+
+\url{ftp://math.usfca.edu/pub/MPI/mpi.guide.ps}
+
+PCU was built on the notion that scalable parallel
+programs often use only the following features of MPI:
+
+\begin{enumerate}
+\item Basic information like \texttt{MPI\_Comm\_size} and
+\texttt{MPI\_Comm\_rank}
+\item Collectives like \texttt{MPI\_Reduce} and \texttt{MPI\_Bcast}
+\item \label{it:nonblock} More complex communications implemented with variants of
+\texttt{MPI\_Isend} and \texttt{MPI\_Irecv}
+\end{enumerate}
+
+In particular, PCU implements an efficient algorithm to solve a complex
+termination-detection problem and provides an interface that
+so far has been able to replace all hand-coded algorithms
+of the kind described in Item \ref{it:nonblock} above.
+
+Before we describe complex communication, lets begin with an example
+of simple parallel functionality:
+
+\lstinputlisting{pcu1.c}
+
+This program should be compiled and run as a parallel MPI job.
+It will print the number of MPI processes in the job, a greeting
+message from each of them, and the sum of the integers from 1 to $n$,
+where $n$ is the number of processes in the job. 
+The output will be a bit out of order, which is a fundamental issue
+with outputting text from a parallel job.
+
+Since PCU uses MPI, MPI must be initialized and finalized around
+PCU, which has its own initialization and finalization calls.
+\texttt{PCU\_Add\_Ints} preforms an all-reduce operation using
+an array of integers as the input and output.
+In this case, the array is just one integer, $i$, which starts
+out as the process rank plus one and is overwritten with the sum
+of all such values across the job.
+
+\end{document}
