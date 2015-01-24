@@ -65,6 +65,7 @@ is provided here:
 \url{http://scorec.rpi.edu/~dibanez/core/index.html}
 
 \section{PCU}
+\label{sec:pcu}
 
 The Parallel Control Utility (PCU) library is built
 on top of a Message Passing Interface (MPI) implementation,
@@ -349,6 +350,10 @@ Then you can set the numbers yourself using
 , whose first four arguments are the same as for
 \texttt{apf::getNumber}.
 
+Also note that \texttt{apf::Numbering} is a good way to store
+any integer value on mesh entities, not necessarily an
+ordered numbering.
+
 \subsection{Iteration}
 
 Most operations will require iterating over mesh entities,
@@ -495,6 +500,63 @@ apf::ModelEntity* found = mesh->findModelEntity(dimension, tag);
 if (me == found)
   std::cout << "we expected this\n";
 \end{lstlisting}
+
+\subsection{Parallel Meshes}
+
+Once you are dealing with parallel, or partitioned, meshes,
+it will be important to get information about how the
+mesh is partitioned.
+In PUMI, we partition meshes by elements.
+That is, each element will exist in exactly one part.
+All mesh entities which bound that element will also exist on
+the same part.
+Because mesh entities may bound multiple elements, they may
+exist on multiple parts.
+This is where remote copies come in.
+Each mesh entity stores information about the other parts
+on which it exists, including pointers to its other copies.
+
+\begin{lstlisting}
+apf::MeshEntity* vertex = ...;
+apf::Copies remotes;
+mesh->getRemotes(vertex, remotes);
+for (apf::Copies::iterator it = remotes.begin();
+     it != remotes.end(); ++it)
+  std::cout << "shared with part " << it->first << '\n;
+\end{lstlisting}
+
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a4fdcb1e40963596d8345f0328e7d65b1}{\texttt{apf::Copies}}
+is a
+\href{http://www.cplusplus.com/reference/map/map/}{\texttt{std::map}}
+whose keys are part numbers and whose
+values are pointers to copies on those parts.
+We will return later to the issue of these pointers and
+why they are there.
+
+Before that, a few more basics.
+First, recall from Section \ref{sec:pcu} that \texttt{PCU\_Comm\_Self}
+gives you the process rank.
+This is identical to the part number, so remember that the two
+can be used interchangeably.
+Second, given a mesh entity with copies, the PUMI system decides
+on one of the copies to designate as the owner.
+You can check whether the local copy is the owner:
+
+\begin{lstlisting}
+if (mesh->isOwned(vertex))
+  std::cout << "yes\n";
+\end{lstlisting}
+
+Now we can put those concepts all together and write a program
+which sets up a numbering by first assigning numbers to
+the vertices which it owns, and then communicating those
+numbers to the non-owned copies so that all copies
+of the same vertex have the same number.
+To do this, we need to use the pointer values in \texttt{apf::Copies}.
+This gives us \texttt{apf::MeshEntity*} values which are usable
+on the destination part to refer to the copy.
+
+\lstinputlisting{apf3.cc}
 
 \appendix
 
