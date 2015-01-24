@@ -155,6 +155,7 @@ from; all data from the same source arrives together in the
 order it was sent.
 
 \section{MDS}
+\label{sec:mds}
 
 MDS is the library which handles the concrete mesh structure which
 users interact with through APF.
@@ -456,6 +457,16 @@ Then use
 Its only argument is the geometric classification, but
 that can be left as zero if the model derivation described
 in \ref{sec:mds} is used after construction.
+
+It is advisable to store the vertex pointers in some sort
+of structure to prepare them for the second step,
+which is to create elements using
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#ae4a6608901d851a5d760bef899ca8e4a}{\texttt{apf::buildElement}}
+.
+Here is a full example code which constructs a one-tet
+mesh and writes Paraview files.
+
+\lstinputlisting{apf2.cc}
 
 \appendix
 
