@@ -26,13 +26,10 @@ int main(int argc, char** argv)
   apf::Numbering* numbers = apf::createNumbering(
       mesh, "my_numbers", mesh->getShape(), 1);
   int i = offset;
-  int numbered = 0;
   it = mesh->begin(0);
   while ((vertex = mesh->iterate(it)))
-    if (mesh->isOwned(vertex)) {
+    if (mesh->isOwned(vertex))
       apf::number(numbers, vertex, 0, 0, i++);
-      ++numbered;
-    }
   mesh->end(it);
   PCU_Comm_Begin();
   it = mesh->begin(0);
@@ -47,17 +44,16 @@ int main(int argc, char** argv)
         PCU_COMM_PACK(it->first, number);
       }
     }
+  mesh->end(it);
   PCU_Comm_Send();
   while (PCU_Comm_Receive()) {
     int number;
     PCU_COMM_UNPACK(vertex);
     PCU_COMM_UNPACK(number);
     apf::number(numbers, vertex, 0, 0, number);
-    ++numbered;
   }
-  mesh->destroyNative();
-  assert(numbered == mesh->count(0));
   apf::writeVtkFiles("numbered", mesh);
+  mesh->destroyNative();
   apf::destroyMesh(mesh);
   PCU_Comm_Free();
   MPI_Finalize();
