@@ -214,6 +214,14 @@ specifies the dimensionality of the mesh, either 2D or 3D.
 The final argument specifies whether periodic associations
 exist between entities, this is almost always false.
 
+Once you have constructed your mesh as described in Section \ref{sec:gen},
+you may want to create a simple geometry around it using
+this special function:
+
+\begin{lstlisting}
+apf::deriveMdsModel(mesh);
+\end{lstlisting}
+
 \section{GMI}
 \label{sec:gmi}
 
@@ -272,8 +280,25 @@ object can be queried but not modified, while an
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html}{\texttt{apf::Mesh2}}
 object may be queried and modified.
 
+\subsection{Entities}
+
 These functions will provide references to mesh entities in the
 form of an \texttt{apf::MeshEntity*} variable.
+One of the most fundamental pieces of information you can get
+out of an \texttt{apf::MeshEntity*} variable is what kind of
+entity it is.
+The kind is encoded in a C++ enumeration value,
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a68729141a3c5781a24bb72ea6160b898}{\texttt{apf::Mesh::Type}}
+and obtained using
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a233fb2ada6d244ea1fffbbdd76e2f6b8}{\texttt{apf::Mesh::getType}}
+.
+
+\begin{lstlisting}
+apf::MeshEntity* e = ...;
+int type = mesh->getType(e);
+if (type == apf::Mesh::QUAD)
+   std::cout << "this is a quad\n";
+\end{lstlisting}
 
 \subsection{Numbering}
 \label{sec:num}
@@ -318,7 +343,10 @@ apf::Numbering* numbers = apf::createNumbering(
 The third argument specifies that we are numbering the mesh
 nodes and the last argument specifies that there is just one
 number per node.
-Then you can set the numbers yourself.
+Then you can set the numbers yourself using
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a3a8fafe58c4c2ec60a572692ffbaa1fd}{apf::number}
+, whose first four arguments are the same as for
+\texttt{apf::getNumber}.
 
 \subsection{Iteration}
 
@@ -408,6 +436,26 @@ apf::MeshEntity* element = e[ e.getSize() - 1 ];
 \href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a12d882b4789bf98322cbe6f02c91b1f8}{\texttt{apf::Adjacent}} is a more complex array type,
 because there is no safe limit on the number of elements around
 a vertex, so it has to grow dynamically.
+
+\subsection{Construction}
+\label{sec:gen}
+
+Finally, you may want to construct your own mesh at
+some point.
+This is usually best separated into two steps:
+\begin{enumerate}
+\item create the vertices at the right points.
+\item create the elements based on their vertices
+\end{enumerate}
+
+Prior to these steps, refer to Section \ref{sec:mds} for
+how to create an empty mesh.
+Then use
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html#ae7a58e9d51c9a683506d83e69416482d}{\texttt{apf::Mesh2::createVert}}
+.
+Its only argument is the geometric classification, but
+that can be left as zero if the model derivation described
+in \ref{sec:mds} is used after construction.
 
 \appendix
 
