@@ -6,7 +6,7 @@ LDFLAGS = -L/Users/danibanez/code/core/install/lib -lmds -lapf -lgmi -lpcu
 
 all: pumi_intro.pdf pcu1 pcu2 apf1 apf2
 
-pumi_intro.pdf: pumi_intro.tex pcu1.c pcu2.c apf2.cc
+pumi_intro.pdf: pumi_intro.tex pcu1.c pcu2.c apf1.cc apf2.cc
 	pdflatex pumi_intro.tex
 	pdflatex pumi_intro.tex
 
