@@ -9,7 +9,8 @@ int main(int argc, char** argv)
   MPI_Init(&argc, &argv);
   PCU_Comm_Init();
   gmi_register_mesh();
-  apf::Mesh2* mesh = apf::loadMdsMesh("cube.dmg", "tet-mesh-1.smb");
+  apf::Mesh2* mesh = apf::loadMdsMesh(
+      "cube.dmg", "tet-mesh-1.smb");
   apf::MeshIterator* it = mesh->begin(mesh->getDimension());
   apf::MeshEntity* e;
   while ((e = mesh->iterate(it))) {
