@@ -475,6 +475,27 @@ mesh and writes Paraview files.
 
 \lstinputlisting{apf2.cc}
 
+\subsection{Classification}
+
+When the mesh is classified onto a CAD model of some sort, we
+can query that relationship.
+For many meshing operations, two integers are all the information
+we need about a CAD model entity.
+First, its dimension (like mesh entities, there are vertices, faces, etc.).
+Second, a unique ``tag" integer which sets the entity apart from
+all other entities of the same dimension (these tags are not necessarily
+unique across \emph{all} model entities).
+
+\begin{lstlisting}
+apf::MeshEntity* e = ...;
+apf::ModelEntity* me = mesh->toModel(e);
+int dimension = mesh->getModelType(me);
+int tag = mesh->getModelTag(me);
+apf::ModelEntity* found = mesh->findModelEntity(dimension, tag);
+if (me == found)
+  std::cout << "we expected this\n";
+\end{lstlisting}
+
 \appendix
 
 \section{Paraview}
