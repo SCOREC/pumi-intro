@@ -292,8 +292,7 @@ entity it is.
 The kind is encoded in a C++ enumeration value,
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a68729141a3c5781a24bb72ea6160b898}{\texttt{apf::Mesh::Type}}
 and obtained using
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a233fb2ada6d244ea1fffbbdd76e2f6b8}{\texttt{apf::Mesh::getType}}
-.
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a233fb2ada6d244ea1fffbbdd76e2f6b8}{\texttt{apf::Mesh::getType}}.
 
 \begin{lstlisting}
 apf::MeshEntity* e = ...;
@@ -473,8 +472,17 @@ in \ref{sec:mds} is used after construction.
 It is advisable to store the vertex pointers in some sort
 of structure to prepare them for the second step,
 which is to create elements using
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#ae4a6608901d851a5d760bef899ca8e4a}{\texttt{apf::buildElement}}
-.
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#ae4a6608901d851a5d760bef899ca8e4a}{\texttt{apf::buildElement}}.
+
+Finally, when mesh construction is over a few calls are
+needed to wrap up the mesh data structure, including
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html#a87d3e1594f409859553bc285686009b4}{\texttt{apf::Mesh2::acceptChanges}}.
+When those calls have been made, it is possible to run
+a stringent verification on the mesh structure itself,
+to make sure no mistakes were made during construction.
+This is done using
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a581c9102d05ed9399242e77e9fa96839}{\texttt{apf::Mesh::verify}}.
+
 Here is a full example code which constructs a one-tet
 mesh and writes Paraview files.
 

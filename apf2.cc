@@ -23,6 +23,8 @@ int main(int argc, char** argv)
   }
   apf::buildElement(mesh, 0, apf::Mesh::TET, vertices);
   apf::deriveMdsModel(mesh);
+  mesh->acceptChanges();
+  mesh->verify();
   apf::writeVtkFiles("onetet", mesh);
   mesh->destroyNative();
   apf::destroyMesh(mesh);
