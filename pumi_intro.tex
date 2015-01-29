@@ -566,6 +566,34 @@ on the destination part to refer to the copy.
 
 \lstinputlisting{apf3.cc}
 
+\subsection{Migration}
+
+An additional topic of interest when dealing with parallel
+meshes is migration.
+In this case, that means the ability to send elements
+from one part to another.
+Since each part is controlled by a separate process,
+the process collects a list of elements which it
+wants to send and the destination parts to which
+it wants to send them.
+This ``plan" is stored in an
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Migration.html}{\texttt{apf::Migration}}
+object.
+This object should be created like this:
+
+\begin{lstlisting}
+apf::Migration* plan = new apf::Migration(mesh);
+\end{lstlisting}
+
+Once the migration plan of elements to send from
+the local process is complete, it is given to the
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#ab67d6bf48b14aec7a7d85d31e061410d}{\texttt{apf::Mesh::migrate}}
+function.
+All processes should call this function at the
+same time, even if they have nothing to send.
+This function will delete the plan, so users
+do not have to delete it themselves.
+
 \appendix
 
 \section{Paraview}
