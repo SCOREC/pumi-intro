@@ -284,7 +284,7 @@ object may be queried and modified.
 
 \subsection{Entities}
 
-These functions will provide references to mesh entities in the
+These functions will refer to mesh entities in the
 form of an \texttt{apf::MeshEntity*} variable.
 One of the most fundamental pieces of information you can get
 out of an \texttt{apf::MeshEntity*} variable is what kind of
@@ -310,26 +310,32 @@ Paraview (see Appendinx \ref{sec:paraview}).
 A general way to do this is using an
 \href{http://scorec.rpi.edu/~dibanez/core/apfNumbering_8h.html}{\texttt{apf::Numbering}}
 object.
-To number the vertices, one can do the following:
+To number the regions, one can do the following:
 
 \begin{lstlisting}
 #include <apfNumbering.h>
 
 apf::Numbering* numbers = numberOwnedDimension(
-    mesh, "my_numbers", 0);
+    mesh, "my_numbers", 3);
 \end{lstlisting}
 
 The second argument is a name of your choice, unique to this numbering object.
-The last argument says to number 0-dimensional entities, i.e. vertices.
-After that, you can use the following to obtain the number of a
-vertex:
+The last argument says to number 3-dimensional entities, i.e. regions.
+
+Due to details of how we communicate with Paraview, there is a
+function which is better for numbering vertices than
+\texttt{apf::numberOwnedDimension(..., 0)}, which is
+\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#ade73c5914c4ce70310c7a92b4f99e837}{\texttt{apf::numberOwnedNodes}}.
+
+After numbering entities, you can call the following to obtain the number of an
+entity:
 
 \begin{lstlisting}
 apf::MeshEntity* vertex = ...;
 int vertex_id = apf::getNumber(numbers, vertex, 0, 0);
 \end{lstlisting}
 
-The last two arguments are used for number high-order fields and
+The last two arguments are used to number high-order fields and
 multiple degrees of freedom per node, if you don't use those
 advanced features just set them to zero.
 
@@ -473,6 +479,12 @@ It is advisable to store the vertex pointers in some sort
 of structure to prepare them for the second step,
 which is to create elements using
 \href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#ae4a6608901d851a5d760bef899ca8e4a}{\texttt{apf::buildElement}}.
+Note that \texttt{apf::buildElement} is given an array
+of vertices, and the order of those vertices is important.
+The documentation for
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#ae9af2075129ffd4553092049d85b276b}{\texttt{apf::Mesh::getDownward}}
+shows pictures of the expected ordering for vertices
+in this array, for each element type.
 
 Finally, when mesh construction is over a few calls are
 needed to wrap up the mesh data structure, including
@@ -643,5 +655,17 @@ the Point Labels options.
 There you can choose what to display.
 If you used \texttt{apf::Numbering} properly, there should be an option
 with the same name that you gave to the numbering.
+Note that in some later versions of Paraview, there is a bug which
+displays all values as floating point numbers by default.
+If you are trying to show \texttt{apf::Numbering} values, you may
+see strange scientific notation instead.
+Click the following icon in the Selection Display Inspector:
+
+\begin{center}
+\includegraphics[width=0.05\textwidth]{gear.png}
+\end{center}
+
+There you will find a format string option, which you can change
+to ``\texttt{\%d}" in order to show integers.
 
 \end{document}
