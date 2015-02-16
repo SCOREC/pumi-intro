@@ -1,8 +1,11 @@
 CC = mpicc
 CXX = mpicxx
-CFLAGS = -I/Users/danibanez/code/core/install/include
-CXXFLAGS = -I/Users/danibanez/code/core/install/include
-LDFLAGS = -L/Users/danibanez/code/core/install/lib -lmds -lapf -lgmi -lpcu
+COREDIR = $(HOME)/barn-shared/pumi/dbg
+BZ2DIR = /gpfs/u/software/bgq/bzip2/xl/1.0.6
+CFLAGS = -I$(COREDIR)/include
+CXXFLAGS = -I$(COREDIR)/include
+LDFLAGS = -L$(COREDIR)/lib -L$(BZ2DIR)/lib
+LDLIBS = -lmds -lapf -lgmi -lpcu -lbz2
 
 all: pumi_intro.pdf pcu1 pcu2 apf1 apf2 apf3
 
