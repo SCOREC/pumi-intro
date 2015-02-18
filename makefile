@@ -1,11 +1,9 @@
 CC = mpicc
 CXX = mpicxx
-COREDIR = $(HOME)/barn-shared/pumi/dbg
-BZ2DIR = /gpfs/u/software/bgq/bzip2/xl/1.0.6
-CFLAGS = -I$(COREDIR)/include
-CXXFLAGS = -I$(COREDIR)/include
-LDFLAGS = -L$(COREDIR)/lib -L$(BZ2DIR)/lib
-LDLIBS = -lmds -lapf -lgmi -lpcu -lbz2
+CFLAGS = `pkg-config --cflags libmds`
+CXXFLAGS = `pkg-config --cflags libmds`
+LDFLAGS = `pkg-config --libs-only-L libmds`
+LDLIBS = `pkg-config --libs-only-l libmds`
 
 all: pumi_intro.pdf pcu1 pcu2 apf1 apf2 apf3
 
