@@ -233,18 +233,26 @@ pumi_mesh_freeze(mesh);
 \section{Geometric Model}
 \label{sec:gmi}
 
-GMI is the library which bridges concrete geometric model structures
-to a mesh that users interact with mainly through \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}, although
-for advanced modeling operations direct calls to GMI may be necessary.
-Usually, though, users are concerned only with loading geometric model
-files.
-As there are many kinds of geometric models, the user has to specify the ``model type" along with geometric model files. In case of PUMI API, the function \emph{pumi$\_$geom$\_$load} performs both model type set-up and model loading as the second argument is a character string specifying the model type (``null" for no model, ``mesh" for mesh-driven model, and ``analytic" for analytic model). The simple format is the ``mesh model" format whose files end in
-\texttt{.dmg} and contain just enough information to maintain
-the relationship between the mesh and geometric model.
-To load mesh model, 
+GMI is the library which bridges geometric model structures
+to a mesh that users interact with.
+Interactions are mainly through
+\href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}},
+but for advanced modeling operations direct calls to GMI may be necessary.
+Usually, though, users are concerned only with loading geometric model files.
+As there are many kinds of geometric models, the user has to specify the
+``model type" along with geometric model files.
+In case of PUMI API, the function \emph{pumi$\_$geom$\_$load} performs both
+model type set-up and model loading as the second argument is a character
+string specifying the model type (``null" for no model, ``mesh" for
+mesh-driven model, and ``analytic" for analytic model).
+% What about PARASOLID and ACIS models?
+The simple format is the ``mesh model" format whose files end in \texttt{.dmg}
+and contain just enough information to maintain the relationship between the
+mesh and geometric model.
+To load a mesh model,
 
 \begin{lstlisting}
-  pumi_geom_load(your_dmg_file, "mesh");
+  pumi_geom_load(/path/to/your/mesh/model.dmg, "mesh");
 \end{lstlisting}
 
 In some cases, users do not really care about the geometric model at
