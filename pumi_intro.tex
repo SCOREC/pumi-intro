@@ -484,11 +484,14 @@ This is usually best separated into two steps:
 \item create the elements based on their vertices
 \end{enumerate}
 
+% Is empty mesh createion covered?
 Prior to these steps, refer to Section \ref{sec:mds} for
 how to create an empty mesh.
 Then use \texttt{pumi$\_$mesh$\_$createVtx} to create a vertex.
-Its arguments are mesh instance, the geometric classification, and \emph{xyz} coordinates. But the geometric classification that can be left as \emph{NULL} if the model derivation described
-in \ref{sec:mds} is used after construction.
+Its arguments are mesh instance, the geometric classification, and \emph{xyz}
+coordinates.
+The geometric classification can be left as \emph{NULL} if the model derivation
+described in \ref{sec:mds} is used after construction.
 
 It is advisable to store the vertex pointers in some sort
 of structure to prepare them for the second step,
@@ -496,12 +499,16 @@ which is to create elements using \texttt{pumi$\_$mesh$\_$createElem}.
 Note that \texttt{pumi$\_$mesh$\_$createElem} is given an array
 of vertices, and the order of those vertices is important.
 The documentation for
+% Is there a pumi equivalent for this?
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#ae9af2075129ffd4553092049d85b276b}{\texttt{apf::Mesh::getDownward}}
 shows pictures of the expected ordering for vertices
 in this array, for each element type.
 
-Finally, when mesh construction is over, the function \texttt{pumi$\_$mesh$\_$freeze} has to be called 
-to wrap up the mesh data structure.
+Finally, when mesh construction is over, the function
+% We previously talked about removing the apf 'freeze' - does this call apf
+% freeze or apf complete?
+\texttt{pumi$\_$mesh$\_$freeze} has to be called to finalize the mesh data
+structure.
 After \texttt{pumi$\_$mesh$\_$freeze} is called, it is possible to run
 a stringent verification on the mesh structure itself,
 to make sure no mistakes were made during construction.
@@ -515,7 +522,13 @@ mesh and writes Paraview files.
 \subsection{Classification}
 
 When the mesh is classified onto a geometric model of some sort, we
-can query that relationship. In \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}, the data type to a geometric model instance (a pointer to geometric model data structure) is \texttt{pGeom}. Given a mesh instance, the function \texttt{pumi$\_$mesh$\_$getGeom} returns its associated geometric model instance. The data type to a geometric model entity is {\texttt{pGeomEnt}}
+can query that relationship.
+In \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}
+{\texttt{pumi.h}}, the data type to a geometric model instance (a pointer to
+geometric model data structure) is \texttt{pGeom}.
+Given a mesh instance, the function \texttt{pumi$\_$mesh$\_$getGeom} returns
+its associated geometric model instance.
+The data type to a geometric model entity is {\texttt{pGeomEnt}}~.
 \
 For many meshing operations, two integers are all the information
 we need about a geometric model entity.
@@ -523,7 +536,9 @@ First, its dimension (like mesh entities, there are vertices, faces, etc.).
 Second, a unique integer ID which sets the entity apart from
 all other entities of the same dimension (these ID's are not necessarily
 unique across \emph{all} model entities).
-Given a geometric model entity, the function \texttt{pumi$\_$ment$\_$getGeomClas} returns the geometric model entity instance where it's generated from.
+Given a geometric model entity, the function
+\texttt{pumi$\_$ment$\_$getGeomClas} returns the geometric model entity
+instance where it's generated from.
 
 \begin{lstlisting}
 pGeom g = pumi_mesh_getGeom(mesh);
