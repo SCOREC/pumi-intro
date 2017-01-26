@@ -581,7 +581,8 @@ We will return later to the issue of these pointers and
 why they are there.
 
 Before that, a few more basics.
-First, recall from Section \ref{sec:pcu} that \texttt{PCU\_Comm\_Self}
+% replace with PUMI version?
+First, recall from Section \ref{sec:pcu} that \texttt{pumi\_rank}
 gives you the process rank.
 This is identical to the part number, so remember that the two
 can be used interchangeably.
@@ -620,13 +621,14 @@ This ``plan" is stored in an
 object.
 This object should be created like this:
 
+% There is no PUMI equivalent for this?
 \begin{lstlisting}
 Migration* plan = new Migration(mesh);
 \end{lstlisting}
 
 Once the migration plan of elements to send from
-the local process is complete, it is given to the \texttt{pumi$\_$mesh$\_$migrate}
-function.
+the local process is complete, it is given to the
+\texttt{pumi$\_$mesh$\_$migrate} function.
 All processes should call this function at the
 same time, even if they have nothing to send.
 This function will delete the plan, so users
