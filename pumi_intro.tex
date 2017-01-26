@@ -9,7 +9,7 @@
   keepspaces=true,
 }
 
-\author{Dan Ibanez}
+\author{PUMI Developers}
 \title{An Introduction to the PUMI libraries}
 
 \begin{document}
@@ -19,7 +19,7 @@
 \begin{abstract}
 The Parallel Unstructured Mesh Infrastructure (PUMI) is
 a set of C and C++ libraries that provide
-interfaces for querying CAD models and functions
+interfaces for querying CAD  geometric models and functions
 for querying and modifying parallel meshes.
 PUMI supports a range of real-world projects
 which make use of parallel tetrahedral and
@@ -34,9 +34,9 @@ are listed below:
 
 \begin{enumerate}
 \item PCU - Communication and parallel coordination
-\item APF - User-level mesh and field interface
+\item APF - Abstract mesh interface and field implementation
 \item MDS - Underlying mesh implementation of choice
-\item GMI - Interfaces with CAD models
+\item GMI - Interfaces with geometric models
 \end{enumerate}
 
 There are other components in PUMI, which provide
@@ -56,13 +56,15 @@ More information about the C++ language can be found at:
 
 \url{http://www.cplusplus.com/doc/tutorial/}
 
-These libraries provide header files with structures
-and functions for users.
-Documentation for all these user-level structures and functions
+Each library provides a header file with structures
+and functions for users. Documentation for all these low-level structures and functions
 is provided here:
 
-\url{http://scorec.rpi.edu/~dibanez/core/index.html}
+\url{http://www.scorec.rpi.edu/~seol/scorec/doxygen}
 
+Fundamental structures and functions of PUMI can also be accessed through a single API header \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}. The API  is the one which users should interact with the majority of the time. Documentation for PUMI API is provided here:
+
+\url{http://scorec.rpi.edu/pumi/PUMI.pdf}
 \section{PCU}
 \label{sec:pcu}
 
@@ -154,27 +156,30 @@ will tell where the current data is coming
 from; all data from the same source arrives together in the
 order it was sent.
 
-\section{MDS}
+The functions \texttt{PCU$\_$Comm$\_$Init}, \texttt{PCU$\_$Comm$\_$Free}, \texttt{PCU$\_$Comm$\_$Peers}, \texttt{PCU$\_$Comm$\_$Self} are respectively equivalent to \texttt{pumi$\_$start}, \texttt{pumi$\_$finalize}, \texttt{pumi$\_$size}, and \texttt{pumi$\_$rank} 
+in \texttt{pumi.h}.
+\section{Mesh}
 \label{sec:mds}
 
 MDS is the library which handles the concrete mesh structure which
-users interact with through APF.
+users interact with through \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}.
 The header file
 \href{https://github.com/SCOREC/core/blob/master/mds/apfMDS.h}{\texttt{apfMDS.h}}
 provides the few functions
-which are not part of the main abstract APF interface.
-Probably the first used function will be
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a7be5af15392b7c92c660b0958bb75969}{\texttt{apf::loadMdsMesh}}
-:
+which are not part of the main abstract APF interface or \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}.
+Probably the first used function will be \texttt{pumi$\_$mesh$\_$load}.
 
 \begin{lstlisting}
-  apf::Mesh2* mesh = apf::loadMdsMesh("model.dmg", "mesh.smb");
+  int num_parts = pumi_size();
+  pMesh mesh = pumi_mesh_load(pumi_geom_load("model.dmg"),
+                "mesh.smb", num_parts);
 \end{lstlisting}
 
-This function will read a CAD model file and mesh files into
+This function will read a geometric model file and mesh files into
 the data structure referenced by the variable called \texttt{mesh}.
+The third argument of \emph{pumi$\_$mesh$\_$load} is the number of mesh parts. 
 See Section \ref{sec:gmi} for more information about loading
-CAD model files.
+geometric model files.
 
 As for the mesh files, there is one file per part, where a
 part is the subset of the mesh stored on one process.
@@ -188,31 +193,35 @@ results in \texttt{mesh0.smb} being read into process 0, and so
 on for other processes.
 
 At the end of your program, you should release the computer
-memory that was used to store the mesh and CAD model.
-This is done in two parts.
-First, APF will direct the underlying implementation (MDS)
+memory that was used to store the mesh and geometric model.
+With low-level functions, this is done in two parts.
+First, PUMI will direct the underlying implementation (MDS)
 to free its memory.
-Second, APF's interface itself can be destroyed.
+Second, PUMI's interface itself can be destroyed.
 
 \begin{lstlisting}
 mesh->destroyNative();
 apf::destroyMesh(mesh);
 \end{lstlisting}
 
+The equivalent code with PUMI API is
+
+\begin{lstlisting}
+pumi_mesh_delete(mesh);
+\end{lstlisting}
+
 In some cases, you may want to construct your own small mesh.
 The easiest way to do this is to make an empty MDS mesh
-on a null CAD geometry.
+on a null geometry.
 See Section \ref{sec:gmi} for info on null geometry.
 
 \begin{lstlisting}
-apf::Mesh2* mesh = apf::makeEmptyMdsMesh(
-    gmi_load(".null"), 3, false);
+pMesh mesh = pumi_mesh_create(pumi_geom_load(NULL, "null"), 3, false);
 \end{lstlisting}
 
-The second argument to
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a11b743b52ed63a172a9f6bf5f29e2054}{\texttt{apf::makeEmptyMdsMesh}}
+The second argument to \texttt{pumi$\_$mesh$\_$create}
 specifies the dimensionality of the mesh, either 2D or 3D.
-The final argument specifies whether periodic associations
+The final argument of \texttt{pumi$\_$mesh$\_$create} secifies whether periodic associations
 exist between entities, this is almost always false.
 
 Once you have constructed your mesh as described in Section \ref{sec:gen},
@@ -220,57 +229,45 @@ you may want to create a simple geometry around it using
 this special function:
 
 \begin{lstlisting}
-apf::deriveMdsModel(mesh);
+pumi_mesh_freeze(mesh);
 \end{lstlisting}
 
-\section{GMI}
+\section{Geometric Model}
 \label{sec:gmi}
 
-GMI is the library which bridges concrete CAD model structures
-to a mesh that users interact with mainly through APF, although
+GMI is the library which bridges concrete geometric model structures
+to a mesh that users interact with mainly through \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}, although
 for advanced modeling operations direct calls to GMI may be necessary.
-Usually, though, users are concerned only with loading CAD model
+Usually, though, users are concerned only with loading geometric model
 files.
-There are many kinds of CAD model files, so GMI requires that users
-``register" readers for the formats they expect to read.
-The simple format is the ``mesh model" format whose files end in
+As there are many kinds of geometric models, the user has to specify the ``model type" along with geometric model files. In case of PUMI API, the function \emph{pumi$\_$geom$\_$load} performs both model type set-up and model loading as the second argument is a character string specifying the model type (``null" for no model, ``mesh" for mesh-driven model, and ``analytic" for analytic model). The simple format is the ``mesh model" format whose files end in
 \texttt{.dmg} and contain just enough information to maintain
-the relationship between the mesh and CAD model.
-To register the mesh model reader, just include
-\href{https://github.com/SCOREC/core/blob/master/gmi/gmi_mesh.h}{\texttt{gmi\_mesh.h}}
-and call the only function in that file:
+the relationship between the mesh and geometric model.
+To load mesh model, 
 
 \begin{lstlisting}
-  gmi_register_mesh();
+  pumi_geom_load(your_dmg_file, "mesh");
 \end{lstlisting}
 
-Do this before trying to read any mesh model files.
-
-In some cases, users do not really care about the CAD model at
+In some cases, users do not really care about the geometric model at
 all.
-For such cases, there is a ``null" CAD model that can be used,
+For such cases, there is a ``null" geometric model that can be used,
 which just mimicks the minimal necessary behavior to support
 the rest of the code.
 You can get a null model as follows:
 
 \begin{lstlisting}
-#include <gmi_null.h>
-
-  gmi_register_null();
-  gmi_model* g = gmi_load(".null");
+  pumi_geom_load(NULL, "null");
 \end{lstlisting}
 
 \section{APF}
 
-The APF library is the one which users should interact with the
-majority of the time.
-APF is an abstract interface which allows users to query and manipulate
-meshes and fields on meshes.
+APF is a library to provide an abstract interface to various mesh implementations and fields on meshes. Part of its structures and functionalities are accessible through \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}.   
 However, since it is abstract, users will inevitably need to
 interact a little with the concrete implementations behind it,
 if only at the beginning of the program, i.e. to create the mesh.
 
-Users will interact with a mesh by calling methods of an
+In case of mesh, users will interact with a mesh by calling methods of an
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html}{\texttt{apf::Mesh}}
 or
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html}{\texttt{apf::Mesh2}}
@@ -280,23 +277,34 @@ An
 object can be queried but not modified, while an
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html}{\texttt{apf::Mesh2}}
 object may be queried and modified.
-
+In \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}, the data type to a modifiable mesh instance (pointer to a mesh data structure) is \texttt{pMesh} .
 \subsection{Entities}
 
 These functions will refer to mesh entities in the
-form of an \texttt{apf::MeshEntity*} variable.
+form of \texttt{pMeshEnt} variable.
 One of the most fundamental pieces of information you can get
-out of an \texttt{apf::MeshEntity*} variable is what kind of
+out of an \texttt{pMeshEnt} variable is what kind of
 entity it is.
 The kind is encoded in a C++ enumeration value,
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a68729141a3c5781a24bb72ea6160b898}{\texttt{apf::Mesh::Type}}
-and obtained using
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a233fb2ada6d244ea1fffbbdd76e2f6b8}{\texttt{apf::Mesh::getType}}.
+\begin{lstlisting}
+enum PUMI_EntTopology {
+  PUMI_VERTEX, // 0   
+  PUMI_EDGE,   // 1   
+  PUMI_TRIANGLE, // 2  
+  PUMI_QUAD, // 3 
+  PUMI_TET,  // 4
+  PUMI_HEX,  // 5 
+  PUMI_PRISM, // 6
+  PUMI_PYRAMID // 7
+);
+\end{lstlisting}
+
+and obtained using \emph{pumi$\_$ment$\_$getTopo}.
 
 \begin{lstlisting}
-apf::MeshEntity* e = ...;
-int type = mesh->getType(e);
-if (type == apf::Mesh::QUAD)
+pMeshEnt e = ...;
+int topology = pumi_ment_getTopo(e);
+if (topology == PUMI_QUAD)
    std::cout << "this is a quad\n";
 \end{lstlisting}
 
@@ -306,15 +314,11 @@ if (type == apf::Mesh::QUAD)
 First-time users may want a way to identify mesh entities which
 is ideal for printing to the output and also for viewing in
 Paraview (see Appendinx \ref{sec:paraview}).
-A general way to do this is using an
-\href{http://scorec.rpi.edu/~dibanez/core/apfNumbering_8h.html}{\texttt{apf::Numbering}}
-object.
+A general way to do this is using a \texttt{Numbering} object.
 To number the regions, one can do the following:
 
 \begin{lstlisting}
-#include <apfNumbering.h>
-
-apf::Numbering* numbers = numberOwnedDimension(
+pNumbering numbers = pumi_numbering_createOwned(
     mesh, "my_numbers", 3);
 \end{lstlisting}
 
@@ -323,15 +327,14 @@ The last argument says to number 3-dimensional entities, i.e. regions.
 
 Due to details of how we communicate with Paraview, there is a
 function which is better for numbering vertices than
-\texttt{apf::numberOwnedDimension(..., 0)}, which is
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#ade73c5914c4ce70310c7a92b4f99e837}{\texttt{apf::numberOwnedNodes}}.
+\texttt{pumi$\_$numbering$\_$createOwned(..., 0)}, which is {\texttt{pumi$\_$numbering$\_$createOwnedNode}.
 
 After numbering entities, you can call the following to obtain the number of an
 entity:
 
 \begin{lstlisting}
-apf::MeshEntity* vertex = ...;
-int vertex_id = apf::getNumber(numbers, vertex, 0, 0);
+pMeshEnt vertex = ...;
+int vertex_id = pumi_ment_getNumber(numbers, vertex, 0, 0);
 \end{lstlisting}
 
 The last two arguments are used to number high-order fields and
@@ -342,19 +345,16 @@ In other cases, you may want to assign numbers yourself.
 To do that, start by making an empty numbering:
 
 \begin{lstlisting}
-apf::Numbering* numbers = apf::createNumbering(
-    mesh, "my_numbers", mesh->getShape(), 1);
+pNumbering numbers = pumi_numbering_create(
+       mesh, "my_numbers",  pumi_mesh_getShape(mesh), 1);
 \end{lstlisting}
 
 The third argument specifies that we are numbering the mesh
 nodes and the last argument specifies that there is just one
 number per node.
-Then you can set the numbers yourself using
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a3a8fafe58c4c2ec60a572692ffbaa1fd}{apf::number}
-, whose first four arguments are the same as for
-\texttt{apf::getNumber}.
+Then you can set the numbers yourself using \texttt{pumi$\_$ment$\_$getNumber}.
 
-Also note that \texttt{apf::Numbering} is a good way to store
+Also note that \texttt{Numbering} is a good way to store
 any integer value on mesh entities, not necessarily an
 ordered numbering.
 
@@ -365,8 +365,8 @@ which can be done one dimension at a time.
 Iteration uses an iterator pointer as follows:
 
 \begin{lstlisting}
-apf::MeshIterator* it = mesh->begin(1);
-apf::MeshEntity* e;
+pMeshIter it = mesh->begin(1);
+pMeshEnt e;
 while ((e = mesh->iterate(it))) {
   /* use "e" somehow */
 }
@@ -376,7 +376,9 @@ mesh->end(it);
 \subsection{Coordinates and Vector3}
 
 You can obtain and possibly change the coordinates of mesh nodes.
-The information is handled in the form of
+Using \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}, the coordinate information is handled in the form of double array of size 3.
+
+Using APF, the coordinate information is handled in the form of
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Vector3.html#_details}{\texttt{apf::Vector3}}
 objects.
 You can treat \texttt{apf::Vector3} just like an array, but it is
@@ -385,7 +387,7 @@ multiplication by a scalar, etc. to these objects.
 There is also a C++ stream output operator for these objects, which
 means they can be given to C++'s \texttt{std::cout}.
 
-The two functions for coordinate management are
+The two low-level functions for coordinate management are
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a27c491ae08a8248e292179dbd7dacb39}{\texttt{apf::Mesh::getPoint}}
 and
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html#a39ad215b2b6d6b75d55819fbbc138f57}{\texttt{apf::Mesh2::setPoint}}
@@ -393,6 +395,8 @@ and
 For example:
 
 \begin{lstlisting}
+#include "apfMesh.h" // for getPoint
+#include "apfMesh2.h" // for setPoint
 apf::Vector3 v;
 mesh->getPoint(vertex, 0, v);
 v[1] = 0.8;
@@ -405,11 +409,21 @@ per mesh entity.
 Currently, set this to zero.
 For quadratic meshes, these functions will operate on edges as well as vertices.
 
+The equivalent code with PUMI API is
+
+\begin{lstlisting}
+#include "pumi.h"
+double v[3];
+pumi_node_getCoord(vertex, 0, v);
+v[1] = 0.8;
+pumi_node_setCoord(vertex, 0, v);
+\end{lstlisting}
+
 Speaking of quadratic meshes, you can convert a linear mesh
 to a quadratic mesh using the following call:
 
 \begin{lstlisting}
-apf::changeMeshShape(mesh, apf::getLagrange(2));
+pumi_mesh_setShape(mesh, pumi_shape_getLagrange(2));
 \end{lstlisting}
 
 \subsection{Adjacency}
@@ -419,6 +433,8 @@ The most important information is downward adjacency, for
 example, getting the vertices of an element.
 
 \begin{lstlisting}
+#include "apfMesh.h"
+
 apf::MeshEntity* element = ...;
 apf::Downward v;
 int numVertices;
@@ -437,6 +453,7 @@ The inverse of downward adjacency is upward adjacency,
 for example, what elements are around a vertex.
 
 \begin{lstlisting}
+#include "apfMesh.h"
 apf::MeshEntity* vertex = ...;
 apf::Adjacent e;
 mesh->getAdjacent(vertex, mesh->getDimension(), e);
@@ -447,12 +464,28 @@ apf::MeshEntity* element = e[ e.getSize() - 1 ];
 because there is no safe limit on the number of elements around
 a vertex, so it has to grow dynamically.
 
+PUMI API provides a single function to retrieve both downward and upward adjacencies.
+The equivalent code with PUMI API is
+
+\begin{lstlisting}
+pMeshEnt element = ...;
+std::vector<pMeshEnt> v;
+pumi_ment_getAdj(element, 0, v);
+size_t numVertices = v.size();
+pMeshEnt lastVertex = v[numVertices - 1];
+
+pMeshEnt vertex = ...;
+std::vector<pMeshEnt> e;
+pumi_ment_getAdj(vertex, pumi_mesh_getDim(m), e);
+pMeshEnt element = e[e.size() - 1 ];
+\end{lstlisting}
+
 Below is a full example program demonstrating file reading,
-adjacency queries, and coordinate output.
+adjacency queries, and coordinate output using PUMI API.
 It will print one line for each element in the mesh,
 containing its vertex coordinates.
 
-\lstinputlisting{apf1.cc}
+\lstinputlisting{pumi1.cc}
 
 \subsection{Construction}
 \label{sec:gen}
@@ -467,57 +500,52 @@ This is usually best separated into two steps:
 
 Prior to these steps, refer to Section \ref{sec:mds} for
 how to create an empty mesh.
-Then use
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html#ae7a58e9d51c9a683506d83e69416482d}{\texttt{apf::Mesh2::createVert}}
-.
-Its only argument is the geometric classification, but
-that can be left as zero if the model derivation described
+Then use \texttt{pumi$\_$mesh$\_$createVtx} to create a vertex.
+Its arguments are mesh instance, the geometric classification, and \emph{xyz} coordinates. But the geometric classification that can be left as \emph{NULL} if the model derivation described
 in \ref{sec:mds} is used after construction.
 
 It is advisable to store the vertex pointers in some sort
 of structure to prepare them for the second step,
-which is to create elements using
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#ae4a6608901d851a5d760bef899ca8e4a}{\texttt{apf::buildElement}}.
-Note that \texttt{apf::buildElement} is given an array
+which is to create elements using \texttt{pumi$\_$mesh$\_$createElem}.
+Note that \texttt{pumi$\_$mesh$\_$createElem} is given an array
 of vertices, and the order of those vertices is important.
 The documentation for
 \href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#ae9af2075129ffd4553092049d85b276b}{\texttt{apf::Mesh::getDownward}}
 shows pictures of the expected ordering for vertices
 in this array, for each element type.
 
-Finally, when mesh construction is over a few calls are
-needed to wrap up the mesh data structure, including
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html#a87d3e1594f409859553bc285686009b4}{\texttt{apf::Mesh2::acceptChanges}}.
-When those calls have been made, it is possible to run
+Finally, when mesh construction is over, the function \texttt{pumi$\_$mesh$\_$freeze} has to be called 
+to wrap up the mesh data structure.
+After \texttt{pumi$\_$mesh$\_$freeze} is called, it is possible to run
 a stringent verification on the mesh structure itself,
 to make sure no mistakes were made during construction.
-This is done using
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a581c9102d05ed9399242e77e9fa96839}{\texttt{apf::Mesh::verify}}.
+This is done using \texttt{pumi$\_$mesh$\_$verify}.
 
 Here is a full example code which constructs a one-tet
 mesh and writes Paraview files.
 
-\lstinputlisting{apf2.cc}
+\lstinputlisting{pumi2.cc}
 
 \subsection{Classification}
 
-When the mesh is classified onto a CAD model of some sort, we
-can query that relationship.
+When the mesh is classified onto a geometric model of some sort, we
+can query that relationship. In \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}, the data type to a geometric model instance (a pointer to geometric model data structure) is \texttt{pGeom}. Given a mesh instance, the function \texttt{pumi$\_$mesh$\_$getGeom} returns its associated geometric model instance. The data type to a geometric model entity is {\texttt{pGeomEnt}}
+\
 For many meshing operations, two integers are all the information
-we need about a CAD model entity.
+we need about a geometric model entity.
 First, its dimension (like mesh entities, there are vertices, faces, etc.).
-Second, a unique ``tag" integer which sets the entity apart from
-all other entities of the same dimension (these tags are not necessarily
+Second, a unique integer ID which sets the entity apart from
+all other entities of the same dimension (these ID's are not necessarily
 unique across \emph{all} model entities).
+Given a geometric model entity, the function \texttt{pumi$\_$ment$\_$getGeomClas} returns the geometric model entity instance where it's generated from.
 
 \begin{lstlisting}
-apf::MeshEntity* e = ...;
-apf::ModelEntity* me = mesh->toModel(e);
-int dimension = mesh->getModelType(me);
-int tag = mesh->getModelTag(me);
-apf::ModelEntity* found = mesh->findModelEntity(dimension, tag);
-if (me == found)
-  std::cout << "we expected this\n";
+pGeom g = pumi_mesh_getGeom(mesh);
+pMeshEnt e = ...;
+pGeomEnt ge = pumi_ment_getGeomClas(e);
+int dimension = pumi_gent_getDim(ge);
+int id = pumi_gent_getID(ge);
+assert(pumi_geom_getNumEnt(g, dimension));
 \end{lstlisting}
 
 \subsection{Parallel Meshes}
@@ -536,15 +564,15 @@ Each mesh entity stores information about the other parts
 on which it exists, including pointers to its other copies.
 
 \begin{lstlisting}
-apf::MeshEntity* vertex = ...;
-apf::Copies remotes;
-mesh->getRemotes(vertex, remotes);
-for (apf::Copies::iterator it = remotes.begin();
+pMeshEnt vertex = ...;
+Copies remotes;
+pumi_ment_getAllRmt(vertex, remotes);
+for (pCopyIter it = remotes.begin();
      it != remotes.end(); ++it)
   std::cout << "shared with part " << it->first << '\n;
 \end{lstlisting}
 
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a4fdcb1e40963596d8345f0328e7d65b1}{\texttt{apf::Copies}}
+\texttt{apf::Copies}
 is a
 \href{http://www.cplusplus.com/reference/map/map/}{\texttt{std::map}}
 whose keys are part numbers and whose
@@ -562,7 +590,7 @@ on one of the copies to designate as the owner.
 You can check whether the local copy is the owner:
 
 \begin{lstlisting}
-if (mesh->isOwned(vertex))
+if (pumi_ment_isOwned(vertex))
   std::cout << "yes\n";
 \end{lstlisting}
 
@@ -571,11 +599,11 @@ which sets up a numbering by first assigning numbers to
 the vertices which it owns, and then communicating those
 numbers to the non-owned copies so that all copies
 of the same vertex have the same number.
-To do this, we need to use the pointer values in \texttt{apf::Copies}.
-This gives us \texttt{apf::MeshEntity*} values which are usable
+To do this, we need to use the pointer values in \texttt{Copies}.
+This gives us \texttt{pMeshEnt} values which are usable
 on the destination part to refer to the copy.
 
-\lstinputlisting{apf3.cc}
+\lstinputlisting{pumi3.cc}
 
 \subsection{Migration}
 
@@ -588,17 +616,16 @@ the process collects a list of elements which it
 wants to send and the destination parts to which
 it wants to send them.
 This ``plan" is stored in an
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Migration.html}{\texttt{apf::Migration}}
+\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Migration.html}{\texttt{Migration}}
 object.
 This object should be created like this:
 
 \begin{lstlisting}
-apf::Migration* plan = new apf::Migration(mesh);
+Migration* plan = new Migration(mesh);
 \end{lstlisting}
 
 Once the migration plan of elements to send from
-the local process is complete, it is given to the
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#ab67d6bf48b14aec7a7d85d31e061410d}{\texttt{apf::Mesh::migrate}}
+the local process is complete, it is given to the \texttt{pumi$\_$mesh$\_$migrate}
 function.
 All processes should call this function at the
 same time, even if they have nothing to send.
@@ -613,15 +640,13 @@ do not have to delete it themselves.
 Paraview is program created by Kitware, Inc. which can visualize meshes
 and fields on meshes.
 It is the program of choice for viewing meshes created by the PUMI libraries.
-APF provides a function
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a060af76b0bb25bffe37dc7a20e121936}{\texttt{apf::writeVtkFiles}}
-in the
-\href{https://github.com/SCOREC/core/blob/master/apf/apf.h}{\texttt{apf.h}}
+PUMI provides a function \texttt{pumi$\_$mesh$\_$write} 
+in the \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}
 header file.
 If this code is executed for a mesh distributed over two processes:
 
 \begin{lstlisting}
-  apf::writeVtkFiles("output", mesh);
+  pumi_mesh_write(mesh, "output", "vtk");
 \end{lstlisting}
 
 It would create the files \texttt{output0.vtu}, \texttt{output1.vtu},
@@ -636,7 +661,7 @@ actually making the decomposition visible.
 Also, the mesh by default is rendered in one ``Solid Color".
 There should be other options corresponding to the fields and numberings
 that were on this mesh at the time of file writing.
-There is usually an ``apf\_part" alternative for files written by APF, which
+There is usually an ``apf\_part" alternative for files written by PUMI, which
 allows users to see the parallel partitioning of the mesh in color.
 
 When vertices are numbered, it may be useful to display their numbers.
@@ -652,11 +677,11 @@ Click and drag to select all the nodes you want to display.
 Then go to \texttt{View->Selection Display Inspector} in the menu and click on
 the Point Labels options.
 There you can choose what to display.
-If you used \texttt{apf::Numbering} properly, there should be an option
+If you used \texttt{Numbering} properly, there should be an option
 with the same name that you gave to the numbering.
 Note that in some later versions of Paraview, there is a bug which
 displays all values as floating point numbers by default.
-If you are trying to show \texttt{apf::Numbering} values, you may
+If you are trying to show \texttt{Numbering} values, you may
 see strange scientific notation instead.
 Click the following icon in the Selection Display Inspector:
 
