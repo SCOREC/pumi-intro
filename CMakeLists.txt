@@ -29,7 +29,11 @@ else()
 endif()
 
 set(CMAKE_CXX_COMPILER ${SCOREC_COMPILER})
+set(CMAKE_C_COMPILER ${SCOREC_COMPILER})
+message("CMAKE_C_COMPILER ${CMAKE_C_COMPILER}")
+message("CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER}")
 set(CMAKE_CXX_FLAGS ${SCOREC_CXX_FLAGS})
+message("CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
 
 function(build_example exe src)
   add_executable(${exe} ${src})
@@ -43,10 +47,13 @@ build_example(pumi2 pumi2.cc)
 build_example(pumi3 pumi3.cc)
 
 find_package(LATEX COMPONENTS pdflatex)
+message("PDFLATEX_COMPILER ${PDFLATEX_COMPILER}")
 
+add_custom_target(pumi_intro ALL
+  SOURCES pumi_intro.pdf)
 add_custom_command(
-  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/pumi_intro.pdf
+  OUTPUT  pumi_intro.pdf
   COMMAND ${PDFLATEX_COMPILER}
-  ARGS ${CMAKE_SOURCE_DIR}/pumi_intro.tex
+  ARGS pumi_intro.tex
+  DEPENDS pumi_intro.tex
 )
-add_custom_target(pumi_intro.pdf ALL)
