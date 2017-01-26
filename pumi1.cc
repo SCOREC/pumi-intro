@@ -1,5 +1,6 @@
 #include <mpi.h>
 #include <vector>
+#include <iostream>
 #include "pumi.h"
 
 int main(int argc, char** argv)
