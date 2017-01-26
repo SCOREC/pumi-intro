@@ -119,14 +119,14 @@ of simple parallel functionality:
 This program should be compiled and run as a parallel MPI job.
 It will print the number of MPI processes in the job, a greeting
 message from each of them, and the sum of the integers from 1 to $n$,
-where $n$ is the number of processes in the job. 
+where $n$ is the number of processes in the job.
 The output will be a bit out of order, which is a fundamental issue
 with outputting text from a parallel job.
 
 Since PCU uses MPI, MPI must be initialized and finalized around
 PCU, which has its own initialization and finalization calls.
 \href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#abf86ddf22cc114fd2bd3f054a067c225}{\texttt{PCU\_Add\_Ints}}
-preforms an all-reduce operation using
+performs an all-reduce operation using
 an array of integers as the input and output.
 In this case, the array is just one integer, $i$, which starts
 out as the process rank plus one and is overwritten with the sum
@@ -161,17 +161,20 @@ will tell where the current data is coming
 from; all data from the same source arrives together in the
 order it was sent.
 
-The functions \texttt{PCU$\_$Comm$\_$Init}, \texttt{PCU$\_$Comm$\_$Free}, \texttt{PCU$\_$Comm$\_$Peers}, \texttt{PCU$\_$Comm$\_$Self} are respectively equivalent to \texttt{pumi$\_$start}, \texttt{pumi$\_$finalize}, \texttt{pumi$\_$size}, and \texttt{pumi$\_$rank} 
-in \texttt{pumi.h}.
+The functions \texttt{PCU$\_$Comm$\_$Init}, \texttt{PCU$\_$Comm$\_$Free},
+\texttt{PCU$\_$Comm$\_$Peers}, \texttt{PCU$\_$Comm$\_$Self} are respectively
+equivalent to \texttt{pumi$\_$start}, \texttt{pumi$\_$finalize},
+\texttt{pumi$\_$size}, and \texttt{pumi$\_$rank} in \texttt{pumi.h}.
+
 \section{Mesh}
 \label{sec:mds}
 
-MDS is the library which handles the concrete mesh structure which
-users interact with through \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}.
+MDS is the library which handles the concrete mesh structure.
 The header file
 \href{https://github.com/SCOREC/core/blob/master/mds/apfMDS.h}{\texttt{apfMDS.h}}
-provides the few functions
-which are not part of the main abstract APF interface or \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}.
+provides the few functions which are not part of the
+\href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}
+interface.
 Probably the first used function will be \texttt{pumi$\_$mesh$\_$load}.
 
 \begin{lstlisting}
@@ -182,15 +185,14 @@ Probably the first used function will be \texttt{pumi$\_$mesh$\_$load}.
 
 This function will read a geometric model file and mesh files into
 the data structure referenced by the variable called \texttt{mesh}.
-The third argument of \emph{pumi$\_$mesh$\_$load} is the number of mesh parts. 
+The third argument of \emph{pumi$\_$mesh$\_$load} is the number of mesh parts.
 See Section \ref{sec:gmi} for more information about loading
 geometric model files.
 
 As for the mesh files, there is one file per part, where a
 part is the subset of the mesh stored on one process.
 So, a two-process mesh would have files named \texttt{mesh0.smb}
-and \texttt{mesh1.smb}.
-As a special case, a single-process mesh just has one file
+and \texttt{mesh1.smb}, and a single-process mesh just has one file
 called \texttt{mesh0.smb}.
 The part number at the end of the name is inserted automatically,
 so calling the function with ``\texttt{mesh.smb}" in the code
@@ -199,17 +201,6 @@ on for other processes.
 
 At the end of your program, you should release the computer
 memory that was used to store the mesh and geometric model.
-With low-level functions, this is done in two parts.
-First, PUMI will direct the underlying implementation (MDS)
-to free its memory.
-Second, PUMI's interface itself can be destroyed.
-
-\begin{lstlisting}
-mesh->destroyNative();
-apf::destroyMesh(mesh);
-\end{lstlisting}
-
-The equivalent code with PUMI API is
 
 \begin{lstlisting}
 pumi_mesh_delete(mesh);
@@ -225,6 +216,7 @@ pMesh mesh = pumi_mesh_create(pumi_geom_load(NULL, "null"), 3, false);
 \end{lstlisting}
 
 The second argument to \texttt{pumi$\_$mesh$\_$create}
+specifies the dimensionality of the mesh; either 2D or 3D.
 The final argument of \texttt{pumi$\_$mesh$\_$create} secifies
 whether periodic associations exist between entities, this is
 almost always false.
@@ -233,8 +225,9 @@ Once you have constructed your mesh as described in Section \ref{sec:gen},
 you may want to create a simple geometry around it using
 this special function:
 
+% What does this have to do with model creation?
 \begin{lstlisting}
-pumi_mesh_freeze(mesh); //What does this have to do with model creation?
+pumi_mesh_freeze(mesh);
 \end{lstlisting}
 
 \section{Geometric Model}
