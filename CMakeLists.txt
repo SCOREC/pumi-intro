@@ -41,3 +41,12 @@ build_example(pcu2 pcu2.c)
 build_example(pumi1 pumi1.cc)
 build_example(pumi2 pumi2.cc)
 build_example(pumi3 pumi3.cc)
+
+find_package(LATEX COMPONENTS pdflatex)
+
+add_custom_command(
+  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/pumi_intro.pdf
+  COMMAND ${PDFLATEX_COMPILER}
+  ARGS ${CMAKE_SOURCE_DIR}/pumi_intro.tex
+)
+add_custom_target(pumi_intro.pdf ALL)
