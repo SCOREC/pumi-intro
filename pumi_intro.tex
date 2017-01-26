@@ -572,8 +572,7 @@ for (pCopyIter it = remotes.begin();
   std::cout << "shared with part " << it->first << '\n;
 \end{lstlisting}
 
-\texttt{apf::Copies}
-is a
+\texttt{Copies} is a
 \href{http://www.cplusplus.com/reference/map/map/}{\texttt{std::map}}
 whose keys are part numbers and whose
 values are pointers to copies on those parts.
@@ -649,7 +648,7 @@ If this code is executed for a mesh distributed over two processes:
   pumi_mesh_write(mesh, "output", "vtk");
 \end{lstlisting}
 
-It would create the files \texttt{output0.vtu}, \texttt{output1.vtu},
+It would create the folder \texttt{output} and files \texttt{0.vtu}, \texttt{1.vtu},
 and \texttt{output.pvtu}.
 Opening the \texttt{output.pvtu} file in Paraview will show users the
 mesh.
