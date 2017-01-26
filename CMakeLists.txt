@@ -53,7 +53,7 @@ add_custom_target(pumi_intro ALL
   SOURCES pumi_intro.pdf)
 add_custom_command(
   OUTPUT  pumi_intro.pdf
-  COMMAND ${PDFLATEX_COMPILER}
-  ARGS pumi_intro.tex
+  COMMAND ${PDFLATEX_COMPILER} ARGS pumi_intro.tex
+  COMMAND ${PDFLATEX_COMPILER} ARGS pumi_intro.tex
   DEPENDS pumi_intro.tex
 )
