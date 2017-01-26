@@ -318,9 +318,9 @@ if (topology == PUMI_QUAD)
 \subsection{Numbering}
 \label{sec:num}
 
-First-time users may want a way to identify mesh entities which
-is ideal for printing to the output and also for viewing in
-Paraview (see Appendinx \ref{sec:paraview}).
+First-time users may want a way to identify mesh entities for
+printing to application output (i.e. via \texttt{printf} and friends)
+and/or for viewing in Paraview (see Appendix \ref{sec:paraview}).
 A general way to do this is using a \texttt{Numbering} object.
 To number the regions, one can do the following:
 
@@ -330,11 +330,13 @@ pNumbering numbers = pumi_numbering_createOwned(
 \end{lstlisting}
 
 The second argument is a name of your choice, unique to this numbering object.
-The last argument says to number 3-dimensional entities, i.e. regions.
+The last argument says to number three-dimensional entities, i.e. regions.
 
 Due to details of how we communicate with Paraview, there is a
 function which is better for numbering vertices than
-\texttt{pumi$\_$numbering$\_$createOwned(..., 0)}, which is {\texttt{pumi$\_$numbering$\_$createOwnedNode}.
+\texttt{pumi$\_$numbering$\_$createOwned(..., 0)}, which is
+% Is this correct? The name seems odd.
+{\texttt{pumi$\_$numbering$\_$createOwnedNode}.
 
 After numbering entities, you can call the following to obtain the number of an
 entity:
@@ -371,6 +373,7 @@ Most operations will require iterating over mesh entities,
 which can be done one dimension at a time.
 Iteration uses an iterator pointer as follows:
 
+% Is this the pumi equivalent for iterating?
 \begin{lstlisting}
 pMeshIter it = mesh->begin(1);
 pMeshEnt e;
@@ -380,43 +383,13 @@ while ((e = mesh->iterate(it))) {
 mesh->end(it);
 \end{lstlisting}
 
-\subsection{Coordinates and Vector3}
+\subsection{Coordinates}
 
-You can obtain and possibly change the coordinates of mesh nodes.
-Using \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}, the coordinate information is handled in the form of double array of size 3.
-
-Using APF, the coordinate information is handled in the form of
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Vector3.html#_details}{\texttt{apf::Vector3}}
-objects.
-You can treat \texttt{apf::Vector3} just like an array, but it is
-possible to apply mathematical operators like addition, subtraction,
-multiplication by a scalar, etc. to these objects.
-There is also a C++ stream output operator for these objects, which
-means they can be given to C++'s \texttt{std::cout}.
-
-The two low-level functions for coordinate management are
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#a27c491ae08a8248e292179dbd7dacb39}{\texttt{apf::Mesh::getPoint}}
-and
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html#a39ad215b2b6d6b75d55819fbbc138f57}{\texttt{apf::Mesh2::setPoint}}
-.
-For example:
-
-\begin{lstlisting}
-#include "apfMesh.h" // for getPoint
-#include "apfMesh2.h" // for setPoint
-apf::Vector3 v;
-mesh->getPoint(vertex, 0, v);
-v[1] = 0.8;
-mesh->setPoint(vertex, 0, v);
-\end{lstlisting}
-
-The second argument to these functions is intended to handle
-very high order fields where there is more than one node
-per mesh entity.
-Currently, set this to zero.
-For quadratic meshes, these functions will operate on edges as well as vertices.
-
-The equivalent code with PUMI API is
+You can query and modify the coordinates of mesh nodes.
+Using \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}
+{\texttt{pumi.h}} the coordinate information is handled in the form of
+an array of three double-precision floating point values.
+For example, the following code changes the ``y'' coordinate of vertex ``v'':
 
 \begin{lstlisting}
 #include "pumi.h"
@@ -425,6 +398,12 @@ pumi_node_getCoord(vertex, 0, v);
 v[1] = 0.8;
 pumi_node_setCoord(vertex, 0, v);
 \end{lstlisting}
+
+The second argument to these functions is intended to handle
+high order fields where there is more than one node
+per mesh entity.
+For first-order mesh entities, set this to zero.
+For quadratic meshes, these functions will operate on edges as well as vertices.
 
 Speaking of quadratic meshes, you can convert a linear mesh
 to a quadratic mesh using the following call:
