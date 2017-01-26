@@ -19,8 +19,8 @@
 \begin{abstract}
 The Parallel Unstructured Mesh Infrastructure (PUMI) is
 a set of C and C++ libraries that provide
-interfaces for querying CAD  geometric models and functions
-for querying and modifying parallel meshes.
+functions for querying and modifying parallel meshes, and
+querying the geometric models they discretize.
 PUMI supports a range of real-world projects
 which make use of parallel tetrahedral and
 mixed meshes.
@@ -57,14 +57,19 @@ More information about the C++ language can be found at:
 \url{http://www.cplusplus.com/doc/tutorial/}
 
 Each library provides a header file with structures
-and functions for users. Documentation for all these low-level structures and functions
-is provided here:
+and functions for users.
+Documentation for all these low-level structures and
+functions is provided here:
 
 \url{http://www.scorec.rpi.edu/~seol/scorec/doxygen}
 
-Fundamental structures and functions of PUMI can also be accessed through a single API header \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}. The API  is the one which users should interact with the majority of the time. Documentation for PUMI API is provided here:
+New user's should access these structures and functions through the
+\href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}
+{\texttt{pumi.h}} header file.
+Documentation is provided here:
 
 \url{http://scorec.rpi.edu/pumi/PUMI.pdf}
+
 \section{PCU}
 \label{sec:pcu}
 
@@ -220,16 +225,16 @@ pMesh mesh = pumi_mesh_create(pumi_geom_load(NULL, "null"), 3, false);
 \end{lstlisting}
 
 The second argument to \texttt{pumi$\_$mesh$\_$create}
-specifies the dimensionality of the mesh, either 2D or 3D.
-The final argument of \texttt{pumi$\_$mesh$\_$create} secifies whether periodic associations
-exist between entities, this is almost always false.
+The final argument of \texttt{pumi$\_$mesh$\_$create} secifies
+whether periodic associations exist between entities, this is
+almost always false.
 
 Once you have constructed your mesh as described in Section \ref{sec:gen},
 you may want to create a simple geometry around it using
 this special function:
 
 \begin{lstlisting}
-pumi_mesh_freeze(mesh);
+pumi_mesh_freeze(mesh); //What does this have to do with model creation?
 \end{lstlisting}
 
 \section{Geometric Model}
