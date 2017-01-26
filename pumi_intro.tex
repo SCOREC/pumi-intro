@@ -418,47 +418,20 @@ The most important information is downward adjacency, for
 example, getting the vertices of an element.
 
 \begin{lstlisting}
-#include "apfMesh.h"
-
-apf::MeshEntity* element = ...;
-apf::Downward v;
-int numVertices;
-numVertices = mesh->getDownward(element, 0, v);
-apf::MeshEntity* lastVertex = v[numVertices - 1];
+pMeshEnt element = ...;
+std::vector<pMeshEnt> v;
+pumi_ment_getAdj(element, 0, v);
+size_t numVertices = v.size();
+pMeshEnt lastVertex = v[numVertices - 1];
 \end{lstlisting}
 
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a041eedcdfef4c64dafb2936219978328}{\texttt{apf::Downward}}
-is just an array that is big enough to hold the result of any downward
-query.
-The second argument to
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#ae9af2075129ffd4553092049d85b276b}{\texttt{apf::Mesh::getDownward}}
+The second argument to {\texttt{pumi_ment_getAdj}}
 is the target dimension, in this case 0 meaning vertices.
 
 The inverse of downward adjacency is upward adjacency,
 for example, what elements are around a vertex.
 
 \begin{lstlisting}
-#include "apfMesh.h"
-apf::MeshEntity* vertex = ...;
-apf::Adjacent e;
-mesh->getAdjacent(vertex, mesh->getDimension(), e);
-apf::MeshEntity* element = e[ e.getSize() - 1 ];
-\end{lstlisting}
-
-\href{http://scorec.rpi.edu/~dibanez/core/namespaceapf.html#a12d882b4789bf98322cbe6f02c91b1f8}{\texttt{apf::Adjacent}} is a more complex array type,
-because there is no safe limit on the number of elements around
-a vertex, so it has to grow dynamically.
-
-PUMI API provides a single function to retrieve both downward and upward adjacencies.
-The equivalent code with PUMI API is
-
-\begin{lstlisting}
-pMeshEnt element = ...;
-std::vector<pMeshEnt> v;
-pumi_ment_getAdj(element, 0, v);
-size_t numVertices = v.size();
-pMeshEnt lastVertex = v[numVertices - 1];
-
 pMeshEnt vertex = ...;
 std::vector<pMeshEnt> e;
 pumi_ment_getAdj(vertex, pumi_mesh_getDim(m), e);
