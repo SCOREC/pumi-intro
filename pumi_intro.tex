@@ -162,9 +162,9 @@ from; all data from the same source arrives together in the
 order it was sent.
 
 The functions \texttt{PCU$\_$Comm$\_$Init}, \texttt{PCU$\_$Comm$\_$Free},
-\texttt{PCU$\_$Comm$\_$Peers}, \texttt{PCU$\_$Comm$\_$Self} are respectively
+\texttt{PCU$\_$Comm$\_$Peers}, \texttt{PCU$\_$Comm$\_$Self}, \texttt{PCU$\_$Comm$\_$Barrier} are respectively
 equivalent to \texttt{pumi$\_$start}, \texttt{pumi$\_$finalize},
-\texttt{pumi$\_$size}, and \texttt{pumi$\_$rank} in \texttt{pumi.h}.
+\texttt{pumi$\_$size}, \texttt{pumi$\_$rank} and \texttt{pumi$\_$sync} in \texttt{pumi.h}.
 
 \section{Mesh}
 \label{sec:mds}
@@ -179,25 +179,30 @@ Probably the first used function will be \texttt{pumi$\_$mesh$\_$load}.
 
 \begin{lstlisting}
   int num_parts = pumi_size();
-  pMesh mesh = pumi_mesh_load(pumi_geom_load("model.dmg"),
-                "mesh.smb", num_parts);
+  pGeom g = pumi_geom_load("model.dmg");
+  pMesh mesh = pumi_mesh_load(g, "mesh.smb", num_parts);
 \end{lstlisting}
 
 This function will read a geometric model file and mesh files into
-the data structure referenced by the variable called \texttt{mesh}.
-The third argument of \emph{pumi$\_$mesh$\_$load} is the number of mesh parts.
+the data structure referenced by the variable called \texttt{g} and \texttt{mesh}.
 See Section \ref{sec:gmi} for more information about loading
-geometric model files.
+geometric model files. 
 
-As for the mesh files, there is one file per part, where a
+The second argument of \emph{pumi$\_$mesh$\_$load} is the mesh file name.
+As for the mesh files, if the mesh is partitioned, there is one file per part, where a
 part is the subset of the mesh stored on one process.
-So, a two-process mesh would have files named \texttt{mesh0.smb}
-and \texttt{mesh1.smb}, and a single-process mesh just has one file
+So, a two-part mesh would have files named \texttt{mesh0.smb}
+and \texttt{mesh1.smb}, and a serial (single-part) mesh just has one file
 called \texttt{mesh0.smb}.
 The part number at the end of the name is inserted automatically,
 so calling the function with ``\texttt{mesh.smb}" in the code
 results in \texttt{mesh0.smb} being read into process 0, and so
 on for other processes.
+
+The third argument of \emph{pumi$\_$mesh$\_$load} is the number of mesh files.
+Suppose \emph{pumi$\_$mesh$\_$load} is called on $p$ processes ($p$$>$1) and the number of mesh file is $1$ (in other words, you have only \texttt{mesh0.smb}). In this case, the serial mesh is loaded onto the master process (process $0$) and partitioned to $p$ processes. 
+
+If you load the $p$-part mesh onto $p$ processes, the third argument is $p$, of which value is \emph{pumi$\_$size()}
 
 At the end of your program, you should release the computer
 memory that was used to store the mesh and geometric model.
@@ -294,14 +299,14 @@ entity it is.
 The kind is encoded in a C++ enumeration value,
 \begin{lstlisting}
 enum PUMI_EntTopology {
-  PUMI_VERTEX, // 0
-  PUMI_EDGE,   // 1
-  PUMI_TRIANGLE, // 2
-  PUMI_QUAD, // 3
-  PUMI_TET,  // 4
-  PUMI_HEX,  // 5
-  PUMI_PRISM, // 6
-  PUMI_PYRAMID // 7
+  PUMI_VERTEX,    // 0
+  PUMI_EDGE,      // 1
+  PUMI_TRIANGLE,  // 2
+  PUMI_QUAD,      // 3
+  PUMI_TET,       // 4
+  PUMI_HEX,       // 5
+  PUMI_PRISM,     // 6
+  PUMI_PYRAMID    // 7
 );
 \end{lstlisting}
 
@@ -382,23 +387,45 @@ while ((e = mesh->iterate(it))) {
 mesh->end(it);
 \end{lstlisting}
 
-\subsection{Coordinates}
+\subsection{Coordinates and Vector3}
 
 You can query and modify the coordinates of mesh nodes.
 Using \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}
 {\texttt{pumi.h}} the coordinate information is handled in the form of
 an array of three double-precision floating point values.
-For example, the following code changes the y-coordinate of vertex {\texttt{v}}:
+For example, the following code changes the y-coordinate of vertex {\texttt{v}} and print:
 
 \begin{lstlisting}
-#include "pumi.h"
+#include <iostream>
+#include <pumi.h>
 double v[3];
 pumi_node_getCoord(vertex, 0, v);
 v[1] = 0.8;
 pumi_node_setCoord(vertex, 0, v);
+std::cout << "vertex coord (" << v[0]<<", "<<v[1]<<", "<<v[2]<< ")\n";
 \end{lstlisting}
 
-The second argument to these functions is intended to handle
+In the low-level implementation, the coordinate information is handled in the form of \texttt{Vector3} 
+objects.
+You can treat \texttt{Vector3} just like an array, but it is
+possible to apply mathematical operators like addition, subtraction,
+multiplication by a scalar, etc. to these objects.
+There is also a C++ stream output operator for these objects, which
+means they can be given to C++'s \texttt{std::cout}.
+
+\begin{lstlisting}
+#include <iostream>
+#include <pumi.h>
+Vector3 v1;
+pumi_node_getCoordVector(vertex1, 0, v1);
+std::cout << "vertex coord "<<v1<<"\n";
+Vector3 v2(8.0 / 4 * i, 8.0 / 6 * j, 0);
+pumi_node_setCoordVector(vertex2, 0, v2);
+// cross product of v1 and v2
+double V = pumi_vector3_cross(v1, v2);
+\end{lstlisting}
+
+The second argument to set/get coordination information is intended to handle
 high order fields where there is more than one node
 per mesh entity.
 For first-order mesh entities, set this to zero.
