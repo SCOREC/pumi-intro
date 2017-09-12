@@ -329,7 +329,7 @@ A general way to do this is using a \texttt{Numbering} object.
 To number the regions, one can do the following:
 
 \begin{lstlisting}
-pNumbering numbers = pumi_numbering_createOwned(
+pNumbering numbers = pumi_numbering_createOwnDim(
     mesh, "my_numbers", 3);
 \end{lstlisting}
 
@@ -338,16 +338,16 @@ The last argument says to number three-dimensional entities, i.e. regions.
 
 Due to details of how we communicate with Paraview, there is a
 function which is better for numbering vertices than
-\texttt{pumi$\_$numbering$\_$createOwned(..., 0)}, which is
+\texttt{pumi$\_$numbering$\_$createOwnDim(..., 0)}, which is
 % Is this correct? The name seems odd.
-{\texttt{pumi$\_$numbering$\_$createOwnedNode}.
+{\texttt{pumi$\_$numbering$\_$createOwn}.
 
 After numbering entities, you can call the following to obtain the number of an
 entity:
 
 \begin{lstlisting}
 pMeshEnt vertex = ...;
-int vertex_id = pumi_ment_getNumber(numbers, vertex, 0, 0);
+int vertex_id = pumi_node_getNumber(numbers, vertex, 0, 0);
 \end{lstlisting}
 
 The last two arguments are used to number high-order fields and
@@ -365,7 +365,7 @@ pNumbering numbers = pumi_numbering_create(
 The third argument specifies that we are numbering the mesh
 nodes and the last argument specifies that there is just one
 number per node.
-Then you can set the numbers yourself using \texttt{pumi$\_$ment$\_$setNumber}.
+Then you can set the numbers yourself using \texttt{pumi$\_$node$\_$setNumber}.
 
 Also note that \texttt{Numbering} is a good way to store
 any integer value on mesh entities, not necessarily an

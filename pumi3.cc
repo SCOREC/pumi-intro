@@ -26,7 +26,7 @@ int main(int argc, char** argv)
   it = mesh->begin(0);
   while ((vertex = mesh->iterate(it)))
     if (pumi_ment_isOwned(vertex))
-      pumi_ment_setNumber(vertex, numbers, 0, 0, i++);
+      pumi_node_setNumber(numbers, vertex, 0, 0, i++);
   mesh->end(it);
   PCU_Comm_Begin();
   it = mesh->begin(0);
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     if (pumi_ment_isOwned(vertex)) {
       Copies remotes;
       pumi_ment_getAllRmt(vertex, remotes);
-      int number = pumi_ment_getNumber(vertex, numbers, 0, 0);
+      int number = pumi_node_getNumber(numbers, vertex, 0, 0);
       for (pCopyIter it = remotes.begin();
            it != remotes.end(); ++it) {
         PCU_COMM_PACK(it->first, it->second);
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     int number;
     PCU_COMM_UNPACK(vertex);
     PCU_COMM_UNPACK(number);
-    pumi_ment_setNumber(vertex, numbers, 0, 0, number);
+    pumi_node_setNumber(numbers, vertex, 0, 0, number);
   }
   pumi_mesh_write(mesh, "numbered", "vtk");
   pumi_mesh_delete(mesh);
