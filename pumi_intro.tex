@@ -24,6 +24,11 @@ querying the geometric models they discretize.
 PUMI supports a range of real-world projects
 which make use of parallel tetrahedral and
 mixed meshes.
+
+Support for PUMI was provided through the Department of Energy (DOE) office of Science's Scientific
+Discovery through Advanced Computing (SciDAC) institute as part of the Frameworks, Algorithms, and Scalable Technologies for Mathematics (FASTMath) program, under grant DE-SC$0006617$.
+
+For all inquiries on PUMI including PUMI-readable model and mesh generation, email to \emph{shephard@rpi.edu}.
 \end{abstract}
 
 \section{Overview}
@@ -68,7 +73,7 @@ New user's should access these structures and functions through the
 {\texttt{pumi.h}} header file.
 Documentation is provided here:
 
-\url{http://scorec.rpi.edu/pumi/PUMI.pdf}
+\url{http://scorec.rpi.edu/~seol/PUMI.pdf}
 
 \section{PCU}
 \label{sec:pcu}
@@ -86,7 +91,8 @@ Although it is not necessary to know MPI in order to use
 PCU, learning MPI is a recommended starting point.
 A decent introduction to MPI can be found here:
 
-\url{ftp://math.usfca.edu/pub/MPI/mpi.guide.ps}
+%\url{ftp://math.usfca.edu/pub/MPI/mpi.guide.ps}
+\url{https://www.mpi-forum.org/docs/mpi-1.1/mpi1-report.pdf}
 
 PCU was built on the notion that scalable parallel
 programs often use only the following features of MPI:
@@ -325,6 +331,7 @@ if (topology == PUMI_QUAD)
 First-time users may want a way to identify mesh entities for
 printing to application output (i.e. via \texttt{printf} and friends)
 and/or for viewing in Paraview (see Appendix \ref{sec:paraview}).
+
 A general way to do this is using a \texttt{Numbering} object.
 To number the regions, one can do the following:
 
@@ -336,16 +343,10 @@ pNumbering numbers = pumi_numbering_createOwnDim(
 The second argument is a name of your choice, unique to this numbering object.
 The last argument says to number three-dimensional entities, i.e. regions.
 
-Due to details of how we communicate with Paraview, there is a
-function which is better for numbering vertices than
-\texttt{pumi$\_$numbering$\_$createOwnDim(..., 0)}, which is
-% Is this correct? The name seems odd.
-{\texttt{pumi$\_$numbering$\_$createOwn}.
-
-After numbering entities, you can call the following to obtain the number of an
-entity:
+The following numbers mesh vertices and retrieves a vertex number.
 
 \begin{lstlisting}
+pNumbering numbers = pumi_numbering_createOwnDim(mesh, "vtx_numbers", 0);
 pMeshEnt vertex = ...;
 int vertex_id = pumi_node_getNumber(numbers, vertex, 0, 0);
 \end{lstlisting}
@@ -364,7 +365,7 @@ pNumbering numbers = pumi_numbering_create(
 
 The third argument specifies that we are numbering the mesh
 nodes and the last argument specifies that there is just one
-number per node.
+number per node. 
 Then you can set the numbers yourself using \texttt{pumi$\_$node$\_$setNumber}.
 
 Also note that \texttt{Numbering} is a good way to store
