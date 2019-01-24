@@ -181,7 +181,7 @@ The header file
 provides the few functions which are not part of the
 \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}
 interface.
-Probably the first used function will be \texttt{pumi$\_$mesh$\_$load}.
+Probably the first used functions will be \texttt{pumi$\_$geom$\_$load} and \texttt{pumi$\_$mesh$\_$load}.
 
 \begin{lstlisting}
   int num_parts = pumi_size();
@@ -207,10 +207,10 @@ on for other processes.
 
 The third argument of \emph{pumi$\_$mesh$\_$load} is the number of mesh files.
 Suppose \emph{pumi$\_$mesh$\_$load} is called on $p$ processes ($p$$>$1) and the number of mesh file is $1$ (in other words, you have only \texttt{mesh0.smb}). In this case, the serial mesh is loaded onto the master process (process $0$) and partitioned to $p$ processes. 
+If you are running on $p$ processes and need to load a mesh with $p$ parts, then the third argument to should be \emph{pumi$\_$size()}.
+We do not currently support loading more than one mesh file per process.
 
-If you load the $p$-part mesh onto $p$ processes, the third argument is $p$, of which value is \emph{pumi$\_$size()}
-
-At the end of your program, you should release the computer
+At the end of your program, you should release the
 memory that was used to store the mesh and geometric model.
 
 \begin{lstlisting}
@@ -266,12 +266,10 @@ To load a mesh model,
   pumi_geom_load(/path/to/your/mesh/model.dmg, "mesh");
 \end{lstlisting}
 
-In some cases, users do not really care about the geometric model at
-all.
-For such cases, there is a ``null" geometric model that can be used,
-which just mimicks the minimal necessary behavior to support
-the rest of the code.
-You can get a null model as follows:
+Users who do not have a geometric model can use the ``null" geometric model.
+The null model provides the minimal necessary behavior to support
+most mesh and field functionality.
+The following call creates a null model:
 
 \begin{lstlisting}
   pumi_geom_load(NULL, "null");
@@ -279,8 +277,8 @@ You can get a null model as follows:
 
 \section{APF}
 
-APF is a library to provide an abstract interface to various mesh
-implementations and fields on meshes.
+The APF library provides an abstract interface to various mesh
+implementations, and the storage of fields on the mesh.
 Part of its structures and functionalities are accessible through
 \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}}.
 However, since it is abstract, users may need to interact a little with the
