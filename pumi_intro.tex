@@ -217,29 +217,7 @@ memory that was used to store the mesh and geometric model.
 pumi_mesh_delete(mesh);
 \end{lstlisting}
 
-In some cases, you may want to construct your own small mesh.
-The easiest way to do this is to make an empty MDS mesh
-on a null geometry.
-See Section \ref{sec:gmi} for info on null geometry.
-
-\begin{lstlisting}
-pMesh mesh = pumi_mesh_create(pumi_geom_load(NULL, "null"), 3, false);
-\end{lstlisting}
-
-The second argument to \texttt{pumi$\_$mesh$\_$create}
-specifies the dimensionality of the mesh; either 2D or 3D.
-The final argument of \texttt{pumi$\_$mesh$\_$create} secifies
-whether periodic associations exist between entities, this is
-almost always false.
-
-Once you have constructed your mesh as described in Section \ref{sec:gen},
-you may want to create a simple geometry around it using
-this special function:
-
-% What does this have to do with model creation?
-\begin{lstlisting}
-pumi_mesh_freeze(mesh);
-\end{lstlisting}
+See Section~\ref{sec:gen} for a description of the APIs needed to construct your own small mesh.
 
 \section{Geometric Model}
 \label{sec:gmi}
