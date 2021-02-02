@@ -6,7 +6,7 @@ int main(int argc, char** argv)
   MPI_Init(&argc, &argv);
   pumi_start();
 
-  pGeom g = pumi_geom_load(NULL, "null");
+  pGeom g = pumi_geom_load("", "null");
   pMesh mesh = pumi_mesh_create(g, 3, false);
   double points[4][3] = {{0,0,0},{1,0,0},{0,1,0},{0,0,1}};
   pMeshEnt vertices[4];
