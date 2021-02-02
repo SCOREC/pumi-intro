@@ -92,7 +92,8 @@ PCU, learning MPI is a recommended starting point.
 A decent introduction to MPI can be found here:
 
 %\url{ftp://math.usfca.edu/pub/MPI/mpi.guide.ps}
-\url{https://www.mpi-forum.org/docs/mpi-1.1/mpi1-report.pdf}
+%\url{https://www.mpi-forum.org/docs/mpi-1.1/mpi1-report.pdf}
+\url{https://mpitutorial.com/}
 
 PCU was built on the notion that scalable parallel
 programs often use only the following features of MPI:
@@ -131,15 +132,15 @@ with outputting text from a parallel job.
 
 Since PCU uses MPI, MPI must be initialized and finalized around
 PCU, which has its own initialization and finalization calls.
-\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#abf86ddf22cc114fd2bd3f054a067c225}{\texttt{PCU\_Add\_Ints}}
+\href{https://www.scorec.rpi.edu/~seol/scorec/doxygen/pcu_8c.html#abf86ddf22cc114fd2bd3f054a067c225}{\texttt{PCU\_Add\_Ints}}
 performs an all-reduce operation using
 an array of integers as the input and output.
 In this case, the array is just one integer, $i$, which starts
 out as the process rank plus one and is overwritten with the sum
 of all such values across the job.
 
-Now lets take a look at the ``phased" communication interface of PCU.
-The general idea is that all processes participate in a ``phase",
+Now lets take a look at the ``phased'' communication interface of PCU.
+The general idea is that all processes participate in a ``phase''
 during which each process sends out messages to other processes.
 PCU takes care of delivering messages such that by the end of
 the phase all processes have received the messages sent to them.
@@ -149,20 +150,20 @@ processes (it should only be run as a two-process job):
 \lstinputlisting{pcu2.c}
 
 A phase begins when all processes call
-\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#aa1821bf79d880c38cdd91515751799ac}{\texttt{PCU\_Comm\_Begin}}
+\href{https://www.scorec.rpi.edu/~seol/scorec/doxygen/pcu_8c.html#aa1821bf79d880c38cdd91515751799ac}{\texttt{PCU\_Comm\_Begin}}
 .
 After that, each process may call
-\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#afd8a6600d960129089c45fd49c1b2311}{\texttt{PCU\_Comm\_Pack}}
+\href{https://www.scorec.rpi.edu/~seol/scorec/doxygen/pcu_8c.html#afd8a6600d960129089c45fd49c1b2311}{\texttt{PCU\_Comm\_Pack}}
 or the more convenient
 \texttt{PCU\_COMM\_PACK}
 macro to pack data to be sent to some destination.
 When all packing is over, a process should call
-\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#a263061f00174fc7a004dcb198778006c}{\texttt{PCU\_Comm\_Send}}
+\href{https://www.scorec.rpi.edu/~seol/scorec/doxygen/pcu_8c.html#a263061f00174fc7a004dcb198778006c}{\texttt{PCU\_Comm\_Send}}
 and enter a loop based on
-\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#ad02bc960bcfa8e2d6b09458dca38bf53}{\texttt{PCU\_Comm\_Receive}}
+\href{https://www.scorec.rpi.edu/~seol/scorec/doxygen/pcu_8c.html#ad02bc960bcfa8e2d6b09458dca38bf53}{\texttt{PCU\_Comm\_Receive}}
 .
 Inside this loop, it should unpack the stream of incoming data.
-\href{http://scorec.rpi.edu/~dibanez/core/pcu_8c.html#ac4577ded2ec61de4b4141e3353aac440}{\texttt{PCU\_Comm\_Sender}}
+\href{http://scorec.rpi.edu/~seol/scorec/doxygen/pcu_8c.html#ac4577ded2ec61de4b4141e3353aac440}{\texttt{PCU\_Comm\_Sender}}
 will tell where the current data is coming
 from; all data from the same source arrives together in the
 order it was sent.
@@ -235,7 +236,7 @@ model type set-up and model loading as the second argument is a character
 string specifying the model type (``null" for no model, ``mesh" for
 mesh-driven model, and ``analytic" for analytic model).
 % What about PARASOLID and ACIS models?
-The simple format is the ``mesh model" format whose files end in \texttt{.dmg}
+The simple format is the ``mesh model'' format whose files end in \texttt{.dmg}
 and contain just enough information to maintain the relationship between the
 mesh and geometric model.
 To load a mesh model,
@@ -244,13 +245,13 @@ To load a mesh model,
   pumi_geom_load(/path/to/your/mesh/model.dmg, "mesh");
 \end{lstlisting}
 
-Users who do not have a geometric model can use the ``null" geometric model.
+Users who do not have a geometric model can use the ``null'' geometric model.
 The null model provides the minimal necessary behavior to support
 most mesh and field functionality.
 The following call creates a null model:
 
 \begin{lstlisting}
-  pumi_geom_load(NULL, "null");
+  pumi_geom_load("", "null");
 \end{lstlisting}
 
 \section{APF}
@@ -263,9 +264,9 @@ However, since it is abstract, users may need to interact a little with the
 concrete implementations behind it.
 When the underlying objects need to be accessed it is important to understand
 that a
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html}{\texttt{apf::Mesh}}
+\href{http://scorec.rpi.edu/~seol/scorec/doxygen/classapf_1_1Mesh.html}{\texttt{apf::Mesh}}
 object can be queried but not modified, while a
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh2.html}{\texttt{apf::Mesh2}}
+\href{http://scorec.rpi.edu/~seol/scorec/doxygen/classapf_1_1Mesh2.html}{\texttt{apf::Mesh2}}
 object may be queried and modified.
 In \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}{\texttt{pumi.h}},
 the data type to a modifiable mesh instance (pointer to a mesh data structure)
@@ -399,7 +400,7 @@ std::cout << "vertex coord "<<v1<<"\n";
 Vector3 v2(8.0 / 4 * i, 8.0 / 6 * j, 0);
 pumi_node_setCoordVector(vertex2, 0, v2);
 // cross product of v1 and v2
-double V = pumi_vector3_cross(v1, v2);
+Vector3 V = pumi_vector3_cross(v1, v2);
 \end{lstlisting}
 
 The second argument to set/get coordination information is intended to handle
@@ -433,7 +434,7 @@ The second argument to {\texttt{pumi\_ment\_getAdj}}
 is the target dimension, in this case 0 meaning vertices.
 
 The inverse of downward adjacency is upward adjacency,
-for example, what elements are around a vertex.
+for example, what elements are bound by a vertex.
 
 \begin{lstlisting}
 pMeshEnt vertex = ...;
@@ -468,14 +469,14 @@ coordinates.
 The geometric classification can be left as \emph{NULL} if the model derivation
 described in \ref{sec:mds} is used after construction.
 
-It is advisable to store the vertex pointers in some sort
-of structure to prepare them for the second step,
+The vertex pointers need to be stored in some sort
+of structure (e.g., \texttt{std::vector}) for use in the second step,
 which is to create elements using \texttt{pumi$\_$mesh$\_$createElem}.
 Note that \texttt{pumi$\_$mesh$\_$createElem} is given an array
 of vertices, and the order of those vertices is important.
 The documentation for
 % Is there a pumi equivalent for this?
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Mesh.html#ae9af2075129ffd4553092049d85b276b}{\texttt{apf::Mesh::getDownward}}
+\href{http://scorec.rpi.edu/~seol/scorec/doxygen/classapf_1_1Mesh.html#ae9af2075129ffd4553092049d85b276b}{\texttt{apf::Mesh::getDownward}}
 shows pictures of the expected ordering for vertices
 in this array, for each element type.
 
@@ -490,7 +491,8 @@ to make sure no mistakes were made during construction.
 This is done using \texttt{pumi$\_$mesh$\_$verify}.
 
 Here is a full example code which constructs a one-tet
-mesh and writes Paraview files.
+mesh and writes \texttt{vtu} files that can be rendered in ParaView.
+Use of ParaView is discussed in Appendix~\ref{sec:paraview}.
 
 \lstinputlisting{pumi2.cc}
 
@@ -503,17 +505,17 @@ In \href{https://github.com/SCOREC/core/blob/master/pumi/pumi.h}
 geometric model data structure) is \texttt{pGeom}.
 Given a mesh instance, the function \texttt{pumi$\_$mesh$\_$getGeom} returns
 its associated geometric model instance.
-The data type to a geometric model entity is {\texttt{pGeomEnt}}~.
-\
+The data type to a geometric model entity is {\texttt{pGeomEnt}}.
+
 For many meshing operations, two integers are all the information
 we need about a geometric model entity.
-First, its dimension (like mesh entities, there are vertices, faces, etc.).
-Second, a unique integer ID which sets the entity apart from
+First, is the dimension (like mesh entities, there are vertices, faces, etc.).
+Second, is a unique integer ID which sets the entity apart from
 all other entities of the same dimension (these ID's are not necessarily
 unique across \emph{all} model entities).
 Given a geometric model entity, the function
 \texttt{pumi$\_$ment$\_$getGeomClas} returns the geometric model entity
-instance where it's generated from.
+instance it is associated with.
 
 \begin{lstlisting}
 pGeom g = pumi_mesh_getGeom(mesh);
@@ -578,6 +580,8 @@ of the same vertex have the same number.
 To do this, we need to use the pointer values in \texttt{Copies}.
 This gives us \texttt{pMeshEnt} values which are usable
 on the destination part to refer to the copy.
+As with the previous program, this one writes \texttt{vtu}
+files that can be visualized in ParaView (see Appendix~\ref{sec:paraview}).
 
 \lstinputlisting{pumi3.cc}
 
@@ -591,8 +595,8 @@ Since each part is controlled by a separate process,
 the process collects a list of elements which it
 wants to send and the destination parts to which
 it wants to send them.
-This ``plan" is stored in an
-\href{http://scorec.rpi.edu/~dibanez/core/classapf_1_1Migration.html}{\texttt{Migration}}
+This ``plan'' is stored in an
+\href{http://scorec.rpi.edu/~seol/scorec/doxygen/classapf_1_1Migration.html}{\texttt{Migration}}
 object.
 This object should be created like this:
 
@@ -604,8 +608,8 @@ Migration* plan = new Migration(mesh);
 Once the migration plan of elements to send from
 the local process is complete, it is given to the
 \texttt{pumi$\_$mesh$\_$migrate} function.
-All processes should call this function at the
-same time, even if they have nothing to send.
+All processes must call this function (it is collective, see
+Section~\ref{sec:pcu}), even if they have nothing to send.
 This function will delete the plan, so users
 do not have to delete it themselves.
 
@@ -635,16 +639,16 @@ By default, Paraview will just render the mesh in ``Surface" mode.
 Changing this to ``Surface with Edges" will outline each visible element,
 actually making the decomposition visible.
 
-Also, the mesh by default is rendered in one ``Solid Color".
+Also, the mesh by default is rendered in one ``Solid Color''.
 There should be other options corresponding to the fields and numberings
 that were on this mesh at the time of file writing.
-There is usually an ``apf\_part" alternative for files written by PUMI, which
+There is usually an ``apf\_part'' alternative for files written by PUMI, which
 allows users to see the parallel partitioning of the mesh in color.
 
 When vertices are numbered, it may be useful to display their numbers.
 See Section \ref{sec:num} for information on creating numberings.
 Right above the mesh viewing area there is a button to select nodes,
-you may also press the ``D" key.
+you may also press the ``D'' key.
 
 \begin{center}
 \includegraphics[width=0.05\textwidth]{select_nodes.png}
@@ -667,6 +671,6 @@ Click the following icon in the Selection Display Inspector:
 \end{center}
 
 There you will find a format string option, which you can change
-to ``\texttt{\%d}" in order to show integers.
+to ``\texttt{\%d}'' in order to show integers.
 
 \end{document}
