@@ -3,7 +3,7 @@ This directory contains C++ PUMI examples, latex source code used to generate
 the pumi-intro document, and build systems for them.
 
 ## C++ PUMI examples
-pcu*.c - pcu examples
+pcu*.cc - pcu examples
 pumi*.cc - pumi api examples
 CMakeLists.txt - CMake build system file
 cube.dmg - geometric model
