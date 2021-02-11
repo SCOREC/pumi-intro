@@ -4,8 +4,9 @@
 #file for a new project
 
 cmake_minimum_required(VERSION 3.0.0)
+
+project(pumi-intro VERSION 1.0.0 LANGUAGES CXX)
 # Starting here are the critical lines:
-project(pumi-intro VERSION 1.0.0)
 
 # Allow the user to indicate where they installed SCOREC
 # via "-DSCOREC_PREFIX=/home/somewhere" when calling `cmake`
@@ -28,20 +29,13 @@ else()
       )
 endif()
 
-set(CMAKE_CXX_COMPILER ${SCOREC_COMPILER})
-set(CMAKE_C_COMPILER ${SCOREC_COMPILER})
-message("CMAKE_C_COMPILER ${CMAKE_C_COMPILER}")
-message("CMAKE_CXX_COMPILER ${CMAKE_CXX_COMPILER}")
-set(CMAKE_CXX_FLAGS ${SCOREC_CXX_FLAGS})
-message("CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
-
 function(build_example exe src)
   add_executable(${exe} ${src})
   target_link_libraries(${exe} PRIVATE SCOREC::core)
 endfunction()
 
-build_example(pcu1 pcu1.c)
-build_example(pcu2 pcu2.c)
+build_example(pcu1 pcu1.cc)
+build_example(pcu2 pcu2.cc)
 build_example(pumi1 pumi1.cc)
 build_example(pumi2 pumi2.cc)
 build_example(pumi3 pumi3.cc)
