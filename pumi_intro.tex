@@ -121,7 +121,7 @@ of the kind described in Item \ref{it:nonblock} above.
 Before we describe complex communication, lets begin with an example
 of simple parallel functionality:
 
-\lstinputlisting{pcu1.c}
+\lstinputlisting{pcu1.cc}
 
 This program should be compiled and run as a parallel MPI job.
 It will print the number of MPI processes in the job, a greeting
@@ -147,7 +147,7 @@ the phase all processes have received the messages sent to them.
 The following program exchanges an integer message between two
 processes (it should only be run as a two-process job):
 
-\lstinputlisting{pcu2.c}
+\lstinputlisting{pcu2.cc}
 
 A phase begins when all processes call
 \href{https://www.scorec.rpi.edu/~seol/scorec/doxygen/pcu_8c.html#aa1821bf79d880c38cdd91515751799ac}{\texttt{PCU\_Comm\_Begin}}
